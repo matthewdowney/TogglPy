@@ -14,7 +14,7 @@ Next on the list:
 * Functions to add/change data & start/stop timers
 
 #Examples
-###Manual requests against against any Toggl endpoint:
+###Manual requests against any Toggl endpoint:
 ```
 from TogglPy import Toggl
 
