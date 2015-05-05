@@ -1,6 +1,7 @@
 #TogglPy Documentation
 This page will serve as lightweight documentation for TogglPy.
 
+```
 NAME
     TogglPy
 
@@ -64,3 +65,4 @@ CLASSES
      |  
      |  setUserAgent(self, agent)
      |      set the User-Agent setting, by default it's set to TogglPy
+```
