@@ -94,6 +94,7 @@ class Toggl():
     #----------------------------------
 
     def startTimeEntry(self, description, pid):
+        '''starts a new Time Entry'''
         data = {
             "time_entry": {
             "description": description,
@@ -105,10 +106,12 @@ class Toggl():
         return self.decodeJSON(response)
 
     def currentRunningTimeEntry(self):
+        '''Gets the Current Time Entry'''
         response = self.postRequest(Endpoints.CURRENT_RUNNING_TIME)
         return self.decodeJSON(response)
 
     def stopTimeEntry(self, pid):
+        '''Stop the time entry'''
         response = self.postRequest(Endpoints.STOP_TIME(pid))
         return self.decodeJSON(response)
 
