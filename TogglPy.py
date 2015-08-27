@@ -110,9 +110,9 @@ class Toggl():
         response = self.postRequest(Endpoints.CURRENT_RUNNING_TIME)
         return self.decodeJSON(response)
 
-    def stopTimeEntry(self, pid):
+    def stopTimeEntry(self, entryid):
         '''Stop the time entry'''
-        response = self.postRequest(Endpoints.STOP_TIME(pid))
+        response = self.postRequest(Endpoints.STOP_TIME(entryid))
         return self.decodeJSON(response)
 
     #-----------------------------------
