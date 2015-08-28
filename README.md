@@ -88,3 +88,26 @@ print "John's client id is %s" % john_doe['id']
 print "The workspace id for 'Personal' is %s" % personal['id']
 ```
 The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000)` to find items by id.
+
+### Starting New Timer
+```
+from TogglPy import TogglPy
+
+toggl = TogglPy.Toggl()
+toggl.setAPIKey("mytogglapikey")
+# You can get your project pid in toggl.com->Projects->(select your project) and copying the last number of the url
+myprojectpid = 10959693
+toggl.startTimeEntry("my description", myprojectpid)
+```
+
+### Stopping Current Timer
+
+```
+from TogglPy import TogglPy
+
+toggl = TogglPy.Toggl()
+toggl.setAPIKey("mytogglapikey")
+
+currentTimer = currentRunningTimeEntry()
+stopTimeEntry(currentTimer['data']['id'])
+```

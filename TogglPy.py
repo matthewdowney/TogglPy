@@ -19,6 +19,11 @@ class Endpoints():
     REPORT_WEEKLY = "https://toggl.com/reports/api/v2/weekly"
     REPORT_DETAILED = "https://toggl.com/reports/api/v2/details"
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
+    START_TIME = "https://www.toggl.com/api/v8/time_entries/start"
+    @staticmethod
+    def STOP_TIME(pid):
+        return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
+    CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
 
 #-------------------------------------------------------
 # Class containing the necessities for Toggl interaction
@@ -34,6 +39,13 @@ class Toggl():
 
     # default API user agent value
     user_agent = "TogglPy"
+
+    #-------------------------------------------------------------
+    # Auxiliary methods
+    #-------------------------------------------------------------
+
+    def decodeJSON(self, jsonString):
+        return json.JSONDecoder().decode(jsonString)
 
     #-------------------------------------------------------------
     # Methods that modify the headers to control our HTTP requests
@@ -54,6 +66,7 @@ class Toggl():
     #------------------------------------------------------
     # Methods for directly requesting data from an endpoint
     #------------------------------------------------------
+
     def requestRaw(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
@@ -67,6 +80,40 @@ class Toggl():
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
         return json.loads(self.requestRaw(endpoint, parameters))
+
+    def postRequest(self, endpoint, parameters=None):
+        '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
+        if parameters == None:
+            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read()
+        else:
+            data = json.JSONEncoder().encode(parameters)
+            return urllib2.urlopen(urllib2.Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
+
+    #----------------------------------
+    # Methods for managing Time Entries
+    #----------------------------------
+
+    def startTimeEntry(self, description, pid):
+        '''starts a new Time Entry'''
+        data = {
+            "time_entry": {
+            "description": description,
+            "pid": pid,
+            "created_with": self.user_agent
+            }
+        }
+        response = self.postRequest(Endpoints.START_TIME, parameters=data)
+        return self.decodeJSON(response)
+
+    def currentRunningTimeEntry(self):
+        '''Gets the Current Time Entry'''
+        response = self.postRequest(Endpoints.CURRENT_RUNNING_TIME)
+        return self.decodeJSON(response)
+
+    def stopTimeEntry(self, entryid):
+        '''Stop the time entry'''
+        response = self.postRequest(Endpoints.STOP_TIME(entryid))
+        return self.decodeJSON(response)
 
     #-----------------------------------
     # Methods for getting workspace data
