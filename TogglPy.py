@@ -136,7 +136,7 @@ class Toggl():
         
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
-            print "Error in getWorkspace(), please enter either a name or an id as a filter"
+            print("Error in getWorkspace(), please enter either a name or an id as a filter")
             return None
 
         if id == None: # then we search by name
@@ -163,7 +163,7 @@ class Toggl():
         
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
-            print "Error in getClient(), please enter either a name or an id as a filter"
+            print("Error in getClient(), please enter either a name or an id as a filter")
             return None
 
         if id == None: # then we search by name
