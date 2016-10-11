@@ -62,7 +62,7 @@ class Toggl():
         '''set the API key in the request header'''
         # craft the Authorization
         authHeader = APIKey + ":" + "api_token"
-        authHeader = "Basic " + authHeader.encode("base64").rstrip()
+        authHeader = "Basic " + b64encode(authHeader.encode()).decode('ascii').rstrip()
 
         # add it into the header
         self.headers['Authorization'] = authHeader
