@@ -4,9 +4,17 @@
 #--------------------------------------------------------------
 
 # for making requests
-import urllib2
-import urllib
+# backward compatibility with python2
+import sys
+if sys.version[0] == "2":
+    from urllib import urlencode
+    from urllib2 import urlopen, Request
+else:
+    from urllib.parse import urlencode
+    from urllib.request import urlopen, Request
 
+
+from base64 import b64encode
 # parsing json data
 import json
 
@@ -70,12 +78,12 @@ class Toggl():
     def requestRaw(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read()
+            return urlopen(Request(endpoint, headers=self.headers)).read()
         else:
             if 'user_agent' not in parameters:
                 parameters.update( {'user_agent' : self.user_agent,} ) # add our class-level user agent in there
-            endpoint = endpoint + "?" + urllib.urlencode(parameters) # encode all of our data for a get request & modify the URL
-            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read() # make request and read the response
+            endpoint = endpoint + "?" + urlencode(parameters) # encode all of our data for a get request & modify the URL
+            return urlopen(Request(endpoint, headers=self.headers)).read() # make request and read the response
 
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
@@ -84,10 +92,10 @@ class Toggl():
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read()
+            return urlopen(Request(endpoint, headers=self.headers)).read()
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urllib2.urlopen(urllib2.Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
+            return urlopen(Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
 
     #----------------------------------
     # Methods for managing Time Entries
