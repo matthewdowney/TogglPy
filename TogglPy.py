@@ -16,6 +16,7 @@ import json
 class Endpoints():
     WORKSPACES = "https://www.toggl.com/api/v8/workspaces"
     CLIENTS = "https://www.toggl.com/api/v8/clients"
+    PROJECTS = "https://www.toggl.com/api/v8/projects"
     REPORT_WEEKLY = "https://toggl.com/reports/api/v2/weekly"
     REPORT_DETAILED = "https://toggl.com/reports/api/v2/details"
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
@@ -168,6 +169,34 @@ class Toggl():
                 if client['id'] == int(id):
                     return client # if we find it return it
             return None # if we get to here and haven't found it return None
+
+    # --------------------------------
+    # Methods for getting PROJECTS data
+    # --------------------------------
+    def getProjects(self):
+        '''return all projects that are visable to a user'''
+        return self.request(Endpoints.CLIENTS)
+
+    def getProject(self, name=None, id=None):
+        '''return the first workspace that matches a given name or id'''
+        projects = self.getProjects()  # get all clients
+
+        # if they give us nothing let them know we're not returning anything
+        if name == None and id == None:
+            print "Error in getProject(), please enter either a name or an id as a filter"
+            return None
+
+        if id == None:  # then we search by name
+            for project in projects:  # search through them for one matching the name provided
+                if project['name'] == name:
+                    return project  # if we find it return it
+            return None  # if we get to here and haven't found it return None
+        else:  # otherwise search by id
+            for project in projects:  # search through them for one matching the id provided
+                if project['id'] == int(id):
+                    return project  # if we find it return it
+            return None  # if we get to here and haven't found it return None
+
 
     #---------------------------------
     # Methods for getting reports data
