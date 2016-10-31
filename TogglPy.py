@@ -173,9 +173,9 @@ class Toggl():
     # --------------------------------
     # Methods for getting PROJECTS data
     # --------------------------------
-    def getProjects(self):
+    def getProjects(self, pid):
         '''return all projects that are visable to a user'''
-        return self.request(Endpoints.CLIENTS)
+        return self.request(Endpoints.PROJECTS + '/{0}'.format(pid))
 
     def getProject(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
