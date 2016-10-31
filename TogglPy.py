@@ -21,7 +21,6 @@ class Endpoints():
     REPORT_DETAILED = "https://toggl.com/reports/api/v2/details"
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
     START_TIME = "https://www.toggl.com/api/v8/time_entries/start"
-    TIME_ENTRIES = "https://www.toggl.com/api/v8/time_entries"
     @staticmethod
     def STOP_TIME(pid):
         return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
@@ -170,7 +169,6 @@ class Toggl():
                 if client['id'] == int(id):
                     return client # if we find it return it
             return None # if we get to here and haven't found it return None
-
 
     def getClientProjects(self, id):
         """
