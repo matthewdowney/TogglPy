@@ -9,7 +9,7 @@ import urllib
 
 # parsing json data
 import json
-
+#
 #---------------------------------------------
 # Class containing the endpoint URLs for Toggl
 #---------------------------------------------
