@@ -153,6 +153,6 @@ if datetime.datetime.today().weekday() not in (5, 6):
 	toggl.createTimeEntry(hourduration=9, projectname='someproject', hour=10)
 ```
 #### Add your daily records as a cron job:
-```shell
-(crontab -l ; echo "0 22 * * * toggl_entry.py")| crontab -
-```
+...```shell
+...(crontab -l ; echo "0 22 * * * toggl_entry.py")| crontab -
+...```
