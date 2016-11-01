@@ -11,7 +11,7 @@ TogglPy is a python library for interacting with the [Toggl API](https://github.
 * Add custom time entries
 
 #Setup
-1. Download the project, or download *TogglPy.py* for local usage
+1. Download the project, or download **TogglPy.py** for local usage
 2. Import the content: 
 ```
 from TogglPy import Toggl
@@ -30,7 +30,7 @@ toggl.setAPIKey('<API-TOKEN>')
 ```
 
 
-#Examples
+#I learn best by **examples**
 ###Manual requests against any Toggl endpoint:
 ```
 from TogglPy import Toggl
