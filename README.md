@@ -115,7 +115,7 @@ The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000
 
 ### Starting New Timer
 
-```
+```python
 # You can get your project pid in toggl.com->Projects->(select your project) and copying the last number of the url
 myprojectpid = 10959693
 toggl.startTimeEntry("my description", myprojectpid)
