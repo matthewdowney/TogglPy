@@ -30,9 +30,9 @@ toggl.setAPIKey('<API-TOKEN>')
 ```
 
 
-#I learn best by **examples**
+#I learn best by examples:
 ###Manual requests against any Toggl endpoint:
-```
+```python
 from TogglPy import Toggl
 
 # create a Toggl object and set our API key 
@@ -47,7 +47,7 @@ for client in reponse:
     print "Client name: %s  Client id: %s" % (client['name'], client['id'])
 ```
 Or, if you want to add some data to your request:
-```
+```python
 data = {
     'id': 42,
     'some_key': 'some_value',
@@ -57,7 +57,7 @@ response = toggl.request("https://www.toggl.com/api/v8/some/endpoint", parameter
 ```
 
 ###Generating PDF reports:
-```
+```python
 # specify that we want reports from this week
 data = {
     'workspace_id': 0000, # see the next example for getting a workspace id
@@ -73,12 +73,12 @@ toggl.getSummaryReportPDF(data, "summary-report.pdf")
 
 ###Finding workspaces and clients
 This will print some raw data that will give you all the info you need to identify clients and workspaces quickly:
-```
+```python
 print toggl.getWorkspaces()
 print toggl.getClients()
 ```
 If you want to clean it up a little replace those print statements with
-```
+```python
 for workspace in toggl.getWorkspaces():
     print "Workspace name: %s\tWorkspace id:%s" % (workspace['name'], workspace['id'])
 for client in toggl.getClients():
@@ -91,12 +91,12 @@ personal = toggl.getWorkspace(name="Personal")
 
 print "John's client id is %s" % john_doe['id']
 print "The workspace id for 'Personal' is %s" % personal['id']
-```
+```python
 The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000)` to find items by id.
 
 ### Starting New Timer
 
-```
+```python
 # You can get your project pid in toggl.com->Projects->(select your project) and copying the last number of the url
 myprojectpid = 10959693
 toggl.startTimeEntry("my description", myprojectpid)
@@ -104,14 +104,14 @@ toggl.startTimeEntry("my description", myprojectpid)
 
 ### Stopping Current Timer
 
-```
+```python
 currentTimer = currentRunningTimeEntry()
 stopTimeEntry(currentTimer['data']['id'])
 ```
 
 ### Creating a custom time entry
 
-```
+```python
 # Create a custom entry for today, of a 9 hour duration, starting at 10 AM:
 toggl.createTimeEntry(hourduration=9, projectname='GoogleDrive', hour=10)
 
