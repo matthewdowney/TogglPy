@@ -139,4 +139,8 @@ toggl.createTimeEntry(hourduration=9, projectname='GoogleDrive', clientname='Goo
 
 # Provide *month* and/or *day* too for specific dates:
 toggl.createTimeEntry(hourduration=9, projectname='GoogleDrive', clientname='Google', month=1, day=31, hour=10)
+
+# Automate missing time entries!
+for day in (29, 30, 31):
+	toggl.createTimeEntry(hourduration=9, projectname='someproject', day=day, hour=10)
 ```
