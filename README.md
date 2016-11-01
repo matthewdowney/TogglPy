@@ -145,14 +145,14 @@ for day in (29, 30, 31):
 	toggl.createTimeEntry(hourduration=9, projectname='someproject', day=day, hour=10)
 ```
 	
-### Automate daily records!
+### Automate daily records
 ```python
 #toggle_entry.py
 import datetime
 if datetime.datetime.today().weekday() not in (5, 6):
 	toggl.createTimeEntry(hourduration=9, projectname='someproject', hour=10)
 ```
-# Add it to your cron jobs:
+#### Add your daily records as a cron job:
 ```shell
 (crontab -l ; echo "0 22 * * * toggl_entry.py")| crontab -
 ```
