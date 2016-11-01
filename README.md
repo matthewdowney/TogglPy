@@ -13,7 +13,7 @@ TogglPy is a python library for interacting with the [Toggl API](https://github.
 #Setup
 1. Download the project, or download **TogglPy.py** for local usage
 2. Import the content: 
-..* ```
+```
 from TogglPy import Toggl
 ```
 3. Create a Toggl object: 
