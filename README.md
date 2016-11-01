@@ -13,16 +13,18 @@ TogglPy is a python library for interacting with the [Toggl API](https://github.
 #Setup
 1. Download the project, or download **TogglPy.py** for local usage
 2. Import the content: 
-```from TogglPy import Toggl```
+..* ```
+from TogglPy import Toggl
+```
 3. Create a Toggl object: 
 ```
 toggl = Toggl()
 ```
-4. Authenticate either by Toggl credentials:
+4. Authenticate either by Toggl credentials OR using [your personal API token](https://toggl.com/app/profile):
 ``` 
 toggl.setAuthCredentials('<EMAIL>', '<PASSWORD>') 
 ```
-   OR using [your personal API token](https://toggl.com/app/profile):
+    OR:
 ``` 
 toggl.setAPIKey('<API-TOKEN>') 
 ```
