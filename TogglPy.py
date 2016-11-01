@@ -2,7 +2,7 @@
 # TogglPy is a non-cluttered, easily understood and implemented
 # library for interacting with the Toggl API.
 #--------------------------------------------------------------
-
+from datetime import datetime
 # for making requests
 import urllib2
 import urllib
@@ -21,6 +21,7 @@ class Endpoints():
     REPORT_DETAILED = "https://toggl.com/reports/api/v2/details"
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
     START_TIME = "https://www.toggl.com/api/v8/time_entries/start"
+    TIME_ENTRIES = "https://www.toggl.com/api/v8/time_entries"
     @staticmethod
     def STOP_TIME(pid):
         return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
@@ -55,6 +56,13 @@ class Toggl():
         '''set the API key in the request header'''
         # craft the Authorization
         authHeader = APIKey + ":" + "api_token"
+        authHeader = "Basic " + authHeader.encode("base64").rstrip()
+
+        # add it into the header
+        self.headers['Authorization'] = authHeader
+
+    def setAuthCredentials(self, email, password):
+        authHeader = '{0}:{1}'.format(email, password)
         authHeader = "Basic " + authHeader.encode("base64").rstrip()
 
         # add it into the header
@@ -114,6 +122,47 @@ class Toggl():
     def stopTimeEntry(self, entryid):
         '''Stop the time entry'''
         response = self.postRequest(Endpoints.STOP_TIME(entryid))
+        return self.decodeJSON(response)
+
+    def createTimeEntry(self, hourduration, projectid=None, projectname=None,
+                        clientname=None, year=None, month=None, day=None, hour=None):
+        """
+        Creating a custom time entry, minimum must is hour duration and project param
+        :param hourduration:
+        :param projectid: Not required if projectname given
+        :param projectname: Not required if projectid was given
+        :param clientname: Can speed up project query process
+        :param year: Taken from now() if not provided
+        :param month: Taken from now() if not provided
+        :param day: Taken from now() if not provided
+        :param hour: Taken from now() if not provided
+        :return: response object from post call
+        """
+        data = {
+            "time_entry": {}
+        }
+
+        if not projectid:
+            if projectname and clientname:
+                projectid = (self.getClientProject(clientname, projectname))['data']['id']
+            elif projectname:
+                projectid = (self.searchClientProject(projectname))['data']['id']
+            else:
+                print 'Too many missing parameters for query'
+                exit(1)
+
+        year = datetime.now().year if not year else year
+        month = datetime.now().month if not month else month
+        day = datetime.now().day if not day else day
+        hour = datetime.now().hour if not hour else hour
+
+        timestruct = datetime(year, month, day, hour-2).isoformat() + '.000Z'
+        data['time_entry']['start'] = timestruct
+        data['time_entry']['duration'] = hourduration*3600
+        data['time_entry']['pid'] = projectid
+        data['time_entry']['created_with'] = 'NAME'
+
+        response = self.postRequest(Endpoints.TIME_ENTRIES, parameters=data)
         return self.decodeJSON(response)
 
     #-----------------------------------
