@@ -61,6 +61,13 @@ class Toggl():
         # add it into the header
         self.headers['Authorization'] = authHeader
 
+    def setAuthCredentials(self, email, password):
+        authHeader = '{0}:{1}'.format(email, password)
+        authHeader = "Basic " + authHeader.encode("base64").rstrip()
+
+        # add it into the header
+        self.headers['Authorization'] = authHeader
+
     def setUserAgent(self, agent):
         '''set the User-Agent setting, by default it's set to TogglPy'''
         self.user_agent = agent
@@ -149,7 +156,7 @@ class Toggl():
         day = datetime.now().day if not day else day
         hour = datetime.now().hour if not hour else hour
 
-        timestruct = datetime(year, month, day, hour).isoformat() + '.000Z'
+        timestruct = datetime(year, month, day, hour-2).isoformat() + '.000Z'
         data['time_entry']['start'] = timestruct
         data['time_entry']['duration'] = hourduration*3600
         data['time_entry']['pid'] = projectid
