@@ -170,33 +170,63 @@ class Toggl():
                     return client # if we find it return it
             return None # if we get to here and haven't found it return None
 
+    def getClientProjects(self, id):
+        """
+        :param id: Client ID by which to query
+        :return: Projects object returned from endpoint
+        """
+        return self.request(Endpoints.CLIENTS + '/{0}/projects'.format(id))
+
+    def searchClientProject(self, name):
+        """
+        Provide only a projects name for query and search through entire available names
+        WARNING: Takes a long time!
+                 If client name is known, 'getClientProject' would be advised
+        :param name: Desired Project's name
+        :return: Project object
+        """
+        for client in self.getClients():
+            try:
+                for project in self.getClientProjects(client['id']):
+                    if project['name'] == name:
+                        return project
+            except:
+                continue
+
+        print 'Could not find client by the name'
+        return None
+
+    def getClientProject(self, clientName, projectName):
+        """
+        Fast query given the Client's name and Project's name
+        :param clientName:
+        :param projectName:
+        :return:
+        """
+        for client in self.getClients():
+            if client['name'] == clientName:
+                cid = client['id']
+
+        if not cid:
+            print 'Could not find such client name'
+            return None
+
+        for projct in self.getClientProjects(cid):
+            if projct['name'] == projectName:
+                pid = projct['id']
+
+        if not pid:
+            print 'Could not find such project name'
+            return None
+
+        return self.getProject(pid)
+
     # --------------------------------
     # Methods for getting PROJECTS data
     # --------------------------------
-    def getProjects(self, pid):
+    def getProject(self, pid):
         '''return all projects that are visable to a user'''
         return self.request(Endpoints.PROJECTS + '/{0}'.format(pid))
-
-    def getProject(self, name=None, id=None):
-        '''return the first workspace that matches a given name or id'''
-        projects = self.getProjects()  # get all clients
-
-        # if they give us nothing let them know we're not returning anything
-        if name == None and id == None:
-            print "Error in getProject(), please enter either a name or an id as a filter"
-            return None
-
-        if id == None:  # then we search by name
-            for project in projects:  # search through them for one matching the name provided
-                if project['name'] == name:
-                    return project  # if we find it return it
-            return None  # if we get to here and haven't found it return None
-        else:  # otherwise search by id
-            for project in projects:  # search through them for one matching the id provided
-                if project['id'] == int(id):
-                    return project  # if we find it return it
-            return None  # if we get to here and haven't found it return None
-
 
     #---------------------------------
     # Methods for getting reports data
