@@ -104,7 +104,7 @@ for client in toggl.getClients():
     print "Client name: %s\tClient id:%s" % (client['name'], client['id'])
 ```
 If you want to find a specific client or workspace:
-```
+```python
 john_doe = toggl.getClient(name="John Doe")
 personal = toggl.getWorkspace(name="Personal")
 
