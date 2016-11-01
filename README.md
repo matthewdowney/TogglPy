@@ -24,7 +24,7 @@ toggl = Toggl()
 ``` 
 toggl.setAuthCredentials('<EMAIL>', '<PASSWORD>') 
 ```
-    OR:
+OR:
 ``` 
 toggl.setAPIKey('<API-TOKEN>') 
 ```
