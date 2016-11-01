@@ -31,7 +31,7 @@ toggl.setAPIKey('<API-TOKEN>')
 
 
 #I learn best by examples:
-###Manual requests against any Toggl endpoint:
+###Manual GET requests against any Toggl endpoint:
 ```python
 from TogglPy import Toggl
 
@@ -55,6 +55,20 @@ data = {
 }   
 response = toggl.request("https://www.toggl.com/api/v8/some/endpoint", parameters=data)
 ```
+
+###Making a POST request to any Toggl endpoint:
+```python
+
+data = { "project": { "name": "some project", "wid":777, "template_id":10237, "is_private":true, "cid":123397 }}
+
+response = toggl.postRequest("https://www.toggl.com/api/v8/projects", parameters=data)
+
+# print the client name and id for each client in the response
+# list of returned values can be found in the Toggl docs (https://github.com/toggl/toggl_api_docs/blob/master/chapters/clients.md)
+for client in reponse:
+    print "Client name: %s  Client id: %s" % (client['name'], client['id'])
+```
+
 
 ###Generating PDF reports:
 ```python
