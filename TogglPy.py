@@ -87,7 +87,7 @@ class Toggl():
 
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
-        return json.loads(self.requestRaw(endpoint, parameters))
+        return json.loads(self.requestRaw(endpoint, parameters).decode('utf-8'))
 
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
