@@ -1,6 +1,10 @@
 #TogglPy
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
+#This fork:
+Includes an example script, run.py, which you can either use as-is or as a starter for your own command line Toggl app.
+Make sure to set your API key, workspace ID and user agent at the top of the script before running it.
+
 #Features
 * Make requests against any (Toggl) API endpoint with request data as a dictionary
 * Generate and save PDFs of summary, weekly, or detailed reports
