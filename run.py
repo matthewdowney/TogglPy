@@ -64,6 +64,8 @@ def formatDuration(duration):
     return duration 
 
 def colorText(color, text):
+    if text is None:
+        text = "*Not specified*"
     if terminalColors:
         return color + text + bcolors.ENDC
     else:
