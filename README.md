@@ -2,8 +2,39 @@
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
 #This fork:
-Includes an example script, run.py, which you can either use as-is or as a starter for your own command line Toggl app.
+Includes an example script, run.py, which you can either use as-is or as a starter for your own command line Toggl time reporting app.
 Make sure to set your API key, workspace ID and user agent at the top of the script before running it.
+
+
+##Output format and example output:
+
+###Output format:
+N entries
+Total hours: X
+
+Client Name
+
+        Project Name
+        dd/mm/yyyy hh:mmAM - hh:mmPM (HH:MM) Task
+        Project Duration: HH:MM
+
+###Example output:
+3 entries
+Total hours: 2
+
+Joe Bloggs
+
+        JoeBloggs.com website
+        10/01/2017 09:55AM - 12:10PM (02:15) Initial design of website
+        Project Duration: 02:15
+
+John Doe
+
+        Fixing hacked JohnDoe.com website
+        09/01/2017 10:00AM - 10:15AM (00:15) Recovering data
+        13/01/2017 10:30AM - 10:40AM (00:10) Restoring website
+        Project Duration: 00:25
+
 
 #Features
 * Make requests against any (Toggl) API endpoint with request data as a dictionary
@@ -146,15 +177,15 @@ toggl.createTimeEntry(hourduration=9, projectname='GoogleDrive', clientname='Goo
 
 # Automate missing time entries!
 for day in (29, 30, 31):
-	toggl.createTimeEntry(hourduration=9, projectname='someproject', day=day, hour=10)
+    toggl.createTimeEntry(hourduration=9, projectname='someproject', day=day, hour=10)
 ```
-	
+    
 ### Automate daily records
 ```python
 #toggle_entry.py
 import datetime
 if datetime.datetime.today().weekday() not in (4, 5):
-	toggl.createTimeEntry(hourduration=9, projectname='someproject', hour=10)
+    toggl.createTimeEntry(hourduration=9, projectname='someproject', hour=10)
 ```
 #### Add your daily records as a cron job:
 ```shell
