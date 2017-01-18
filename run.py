@@ -5,15 +5,18 @@ import sys
 
 toggl = Toggl()
 
-toggl.setAPIKey('API_KEY') 
+toggl.setAPIKey('***REMOVED***') 
 
 data = {
-    'workspace_id': WORKSPACE_ID,
-    'user_agent': 'USER_AGENT',
+    'workspace_id': ***REMOVED***,
+    'user_agent': '***REMOVED***',
     'page': 1
 }
 
-terminalColors = True #Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file)
+terminalColors = True # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
+
+tags_to_report = 'billable' # If you have a tag for billable hours and wish to report on them, set it here.
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -64,10 +67,12 @@ def formatDuration(duration):
     return duration 
 
 def colorText(color, text):
+    if text is None:
+        text = "*Not specified*"
     if terminalColors:
         return color + text + bcolors.ENDC
     else:
-        return text
+        return text       
 
 def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
@@ -102,10 +107,18 @@ item_count = detailedData['total_count']
 print str(item_count) + " entries"
 
 detailedData2 = dict(detailedData)
+#detailedData2 = dict()
 
 while item_count > 0:
+    # This bit is required if there is more than one page
     for timeentry in detailedData['data']:
-        detailedData2.update(timeentry)
+        if tags_to_report:
+            if tags_to_report in timeentry['tags']:
+                print timeentry
+                print ""
+                detailedData2.update(timeentry)
+        else:
+            detailedData2.update(timeentry)
 
         totalTime += timeentry['dur']
         num_items += 1
@@ -116,10 +129,12 @@ while item_count > 0:
             detailedData = toggl.getDetailedReport(data)
             #print "page " + str(data['page'])
 
+print 'heeere'
+print detailedData2
 
 
 
-print "Total hours: " + str(totalTime / 3600000)
+print "Total hours: " + str(round(totalTime / float(3600000), 2))
 
 sortedData = sorted(detailedData2['data'])
 sortedData = multikeysort(detailedData2['data'], ['client', 'project', 'start'])
@@ -130,30 +145,30 @@ projDuration = datetime.timedelta(0)
 
 for timeentry in sortedData:
 
-        if project != timeentry['project'] and projDuration != datetime.timedelta(0):
-            print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration))
-            projDuration = datetime.timedelta(0)
-        if client != timeentry['client']:
-            print ""
-            print colorText(bcolors.OKGREEN, timeentry['client'])
-        if project != timeentry['project']:
-            print ""
-            print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
-            #print "\t" + timeentry['project'] 
+    if project != timeentry['project'] and projDuration != datetime.timedelta(0):
+        print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration))
+        projDuration = datetime.timedelta(0)
+    if client != timeentry['client']:
+        print ""
+        print colorText(bcolors.OKGREEN, timeentry['client'])
+    if project != timeentry['project']:
+        print ""
+        print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
+        #print "\t" + timeentry['project'] 
 
-        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #13:00 is the timezone.  Might need to change this
-        end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
-        duration = abs(end - start)
-        projDuration += duration
-        duration = formatDuration(duration)
-        #Format start & end datetimes
-        start = start.strftime('%d/%m/%Y %I:%M%p') 
-        end = end.strftime('%I:%M%p')
+    start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #13:00 is the timezone.  Might need to change this
+    end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+    duration = abs(end - start)
+    projDuration += duration
+    duration = formatDuration(duration)
+    #Format start & end datetimes
+    start = start.strftime('%d/%m/%Y %I:%M%p') 
+    end = end.strftime('%I:%M%p')
 
-        print "\t" + start + " - " + end + " (" + duration + ") " + timeentry['description']
+    print "\t" + start + " - " + end + " (" + duration + ") " + timeentry['description']
 
-        client = timeentry['client']
-        project = timeentry['project']
+    client = timeentry['client']
+    project = timeentry['project']
 
 print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
 
