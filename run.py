@@ -107,7 +107,9 @@ item_count = detailedData['total_count']
 print str(item_count) + " entries"
 
 detailedData2 = dict(detailedData)
-#detailedData2 = dict()
+#detailedData2 = dict({'data':''})
+
+#print detailedData2
 
 while item_count > 0:
     # This bit is required if there is more than one page
