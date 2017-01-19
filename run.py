@@ -94,11 +94,21 @@ def main(argv):
     parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
     parser.add_argument("--tagids",help="Tag IDs to report on.  Do not provide this argument to ignore tags.",nargs='*',required=False)
     parser.add_argument("--clientids",help="Client IDs to report on.  Do not provide this argument to report on all clients.",nargs='*',required=False)
+    parser.add_argument("--getclientids",help="Prints client names and IDs only.  ",action="store_true",required=False)
     parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
+
     parser.add_argument("--debug",help="Prints debugging info",action="store_true",required=False)
    
 
     x=parser.parse_args()
+
+    if x.getclientids:
+        for client in toggl.getClients():
+            print "Client name: %s\t\t ID: %s" % (client['name'], client['id'])
+        exit()
+
+    
+
 
     global terminalColors
 

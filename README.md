@@ -71,6 +71,10 @@ Ability to add tags to time
 Reporting on specific clients (with --clientids parameter)   
 Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).
 
+## How to get client IDs for use with --clientids parameter:
+Use the --getclientids parameter, e.g. ```python run.py --getclientids```   
+This will print all client names and IDs.
+
 
 #Features
 * Make requests against any (Toggl) API endpoint with request data as a dictionary
