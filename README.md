@@ -36,8 +36,40 @@ John Doe
         Project Duration: 00:25
 
 
+## Help:
+python run.py --help
+usage: run.py [-h] [--period PERIOD PERIOD] [--tagids [TAGIDS [TAGIDS ...]]]
+              [--nocolors] [--debug]
+
+This program provides some basic command line Toggl reporting.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --period PERIOD PERIOD
+                        Time period to report on. Usage: --period startdate
+                        enddate [where startdate & enddate take the format
+                        yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this
+                        argument, to report on the current month)
+  --tagids [TAGIDS [TAGIDS ...]]
+                        Tag IDs to report on. Do not provide this argument to
+                        ignore tags.
+  --nocolors            Prints plain output, useful if piping to a file
+  --debug               Prints debugging info
+
+Based on Matthew Downey's TogglPy library
+(https://github.com/matthewdowney/TogglPy/). This script: credit (C) Mikey
+Beck https://mikeybeck.com.
+
+
+## Example input and output:
+![example input](example-in.png)
+
 ## run.py TODO:
-Make distinction between billed & unbilled time and allow reporting on either
+Reporting on specific clients
+Ability to add tags to time
+
+## run.py DONE:
+Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).
 
 
 #Features
