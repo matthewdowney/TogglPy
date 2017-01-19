@@ -19,7 +19,7 @@ Client Name
         Project Duration: HH:MM
 
 ###Example output:
-3 entries
+3 entries    
 Total hours: 2
 
 Joe Bloggs
@@ -57,18 +57,18 @@ optional arguments:
   --debug               Prints debugging info
 
 Based on Matthew Downey's TogglPy library
-(https://github.com/matthewdowney/TogglPy/). This script: credit (C) Mikey
-Beck https://mikeybeck.com.
+(https://github.com/matthewdowney/TogglPy/). 
+This script: credit (C) Mikey Beck https://mikeybeck.com.
 
 
 ## Example input and output:
 ![example input](example-in.png)
 
 ## run.py TODO:
-Reporting on specific clients
 Ability to add tags to time
 
 ## run.py DONE:
+Reporting on specific clients (with --clientids parameter)   
 Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).
 
 
