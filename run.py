@@ -98,6 +98,13 @@ def main(argv):
 
     x=parser.parse_args()
 
+    global terminalColors
+
+    if x.nocolors:
+        terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
+    else:
+        terminalColors = True
+
     if x.period:
         data['since'] = x.period[0]
         data['until'] = x.period[1]
@@ -110,12 +117,7 @@ def main(argv):
         for tagid in x.tagids:
             data['tag_ids'] += tagid + "," # Trailing comma doesn't matter so this is ok
 
-    global terminalColors
-
-    if x.nocolors:
-        terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
-    else:
-        terminalColors = True
+    
 
     if x.debug:
         print data
