@@ -2,6 +2,7 @@
 from TogglPy import Toggl
 import datetime
 import sys
+import argparse
 
 toggl = Toggl()
 
@@ -10,12 +11,16 @@ toggl.setAPIKey('10768746f747204579627f3e37edc929')
 data = {
     'workspace_id': 334400,
     'user_agent': 'mike@mikeybeck.com',
-    'page': 1
+    'page': 1,
+    'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
 }
 
-terminalColors = True # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
+# Something like this next line would be ideal but it's not currently easy to access task IDs.
+# (The only way I currently know how is to create a new task using the API and get the ID from the return value.
+#  See readme for an example of how to do this.)
+#tags_to_report = 'billable' # If you have a tag for billable hours and wish to report on them, set it here.
+# Instead of the above line, tag IDs are taken as arguments.
 
-tags_to_report = 'billable' # If you have a tag for billable hours and wish to report on them, set it here.
 
 
 class bcolors:
@@ -79,98 +84,119 @@ def last_day_of_month(any_day):
     return next_month - datetime.timedelta(days=next_month.day)
 
 
-if len(sys.argv) == 1:
-    data['since'] = datetime.date.today().replace(day=1) #First day of current month
-    data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month
-    print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
-elif (len(sys.argv) == 3):
-    data['since'] = sys.argv[1]
-    data['until'] = sys.argv[2]
-else:
-    print colorText(bcolors.FAIL, "Usage:  %s  startdate  enddate" % sys.argv[0])
-    print colorText(bcolors.FAIL, "[startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23]")
-    print colorText(bcolors.FAIL, "(Or provide no arguments, to report on the current month)")
-    sys.exit(1)
+
+def main(argv):
+    desc="""This program provides some basic command line Toggl reporting."""
+    epilog="""Based on Matthew Downey's TogglPy library (https://github.com/matthewdowney/TogglPy/).
+    This script: credit (C) Mikey Beck https://mikeybeck.com."""
+    parser = argparse.ArgumentParser(description=desc,epilog=epilog)
+    parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
+    parser.add_argument("--tagids",help="Tag IDs to report on.  Do not provide this argument to ignore tags.",nargs='*',required=False)
+    parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
+    parser.add_argument("--debug",help="Prints debugging info",action="store_true",required=False)
+   
+
+    x=parser.parse_args()
+
+    if x.period:
+        data['since'] = x.period[0]
+        data['until'] = x.period[1]
+    else:
+        data['since'] = datetime.date.today().replace(day=1) #First day of current month
+        data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month
+        print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
+
+    if x.tagids:
+        for tagid in x.tagids:
+            data['tag_ids'] += tagid + "," # Trailing comma doesn't matter so this is ok
+
+    global terminalColors
+
+    if x.nocolors:
+        terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
+    else:
+        terminalColors = True
+
+    if x.debug:
+        print data
 
 
+    detailedData = toggl.getDetailedReport(data)
 
+    totalTime = 0
+    num_items = 0
 
+    item_count = detailedData['total_count']
 
+    print str(item_count) + " entries"
 
-detailedData = toggl.getDetailedReport(data)
+    detailedData2 = dict(detailedData)
 
-totalTime = 0
-num_items = 0
-
-item_count = detailedData['total_count']
-
-print str(item_count) + " entries"
-
-detailedData2 = dict(detailedData)
-#detailedData2 = dict({'data':''})
-
-#print detailedData2
-
-while item_count > 0:
-    # This bit is required if there is more than one page
-    for timeentry in detailedData['data']:
-        if tags_to_report:
-            if tags_to_report in timeentry['tags']:
-                print timeentry
-                print ""
-                detailedData2.update(timeentry)
-        else:
+    while item_count > 0:
+        # This bit is required if there is more than one page
+        for timeentry in detailedData['data']:
+ #           if tags_to_report:
+ #               if tags_to_report in timeentry['tags']:
+ #                   print timeentry
+ #                   print ""
+ #                   detailedData2.update(timeentry)
+ #           else:
+ #               print timeentry
+ #               print ""
+ #               detailedData2.update(timeentry)
             detailedData2.update(timeentry)
 
-        totalTime += timeentry['dur']
-        num_items += 1
-        item_count -= 1
 
-        if num_items % 50 == 0: #Page through data (there are 50 items per page)
-            data['page'] += 1
-            detailedData = toggl.getDetailedReport(data)
-            #print "page " + str(data['page'])
+            totalTime += timeentry['dur']
+            num_items += 1
+            item_count -= 1
 
-print 'heeere'
-print detailedData2
+            if num_items % 50 == 0: #Page through data (there are 50 items per page)
+                data['page'] += 1
+                detailedData = toggl.getDetailedReport(data)
+                #print "page " + str(data['page'])
 
 
 
-print "Total hours: " + str(round(totalTime / float(3600000), 2))
+    print "Total hours: " + str(round(totalTime / float(3600000), 2))
 
-sortedData = sorted(detailedData2['data'])
-sortedData = multikeysort(detailedData2['data'], ['client', 'project', 'start'])
+    sortedData = sorted(detailedData2['data'])
+    sortedData = multikeysort(detailedData2['data'], ['client', 'project', 'start'])
 
-client = ""
-project = ""
-projDuration = datetime.timedelta(0)
+    client = ""
+    project = ""
+    projDuration = datetime.timedelta(0)
 
-for timeentry in sortedData:
+    for timeentry in sortedData:
 
-    if project != timeentry['project'] and projDuration != datetime.timedelta(0):
-        print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration))
-        projDuration = datetime.timedelta(0)
-    if client != timeentry['client']:
-        print ""
-        print colorText(bcolors.OKGREEN, timeentry['client'])
-    if project != timeentry['project']:
-        print ""
-        print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
-        #print "\t" + timeentry['project'] 
+        if project != timeentry['project'] and projDuration != datetime.timedelta(0):
+            print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration))
+            projDuration = datetime.timedelta(0)
+        if client != timeentry['client']:
+            print ""
+            print colorText(bcolors.OKGREEN, timeentry['client'])
+        if project != timeentry['project']:
+            print ""
+            print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
+            #print "\t" + timeentry['project'] 
 
-    start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #13:00 is the timezone.  Might need to change this
-    end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
-    duration = abs(end - start)
-    projDuration += duration
-    duration = formatDuration(duration)
-    #Format start & end datetimes
-    start = start.strftime('%d/%m/%Y %I:%M%p') 
-    end = end.strftime('%I:%M%p')
+        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #13:00 is the timezone.  Might need to change this
+        end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+        duration = abs(end - start)
+        projDuration += duration
+        duration = formatDuration(duration)
+        #Format start & end datetimes
+        start = start.strftime('%d/%m/%Y %I:%M%p') 
+        end = end.strftime('%I:%M%p')
 
-    print "\t" + start + " - " + end + " (" + duration + ") " + timeentry['description']
+        print "\t" + start + " - " + end + " (" + duration + ") " + timeentry['description']
 
-    client = timeentry['client']
-    project = timeentry['project']
+        client = timeentry['client']
+        project = timeentry['project']
 
-print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
+    print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
 
+
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
