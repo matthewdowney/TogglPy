@@ -2,6 +2,10 @@
 from TogglPy import Toggl
 import datetime
 import sys
+import argparse
+
+import urllib2
+import json
 
 toggl = Toggl()
 
@@ -10,10 +14,18 @@ toggl.setAPIKey('API_KEY')
 data = {
     'workspace_id': WORKSPACE_ID,
     'user_agent': 'USER_AGENT',
-    'page': 1
+    'page': 1,
+    'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
+    'client_ids': ''
 }
 
-terminalColors = True #Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file)
+# Something like this next line would be ideal but it's not currently easy to access task IDs.
+# (The only way I currently know how is to create a new task using the API and get the ID from the return value.
+#  See readme for an example of how to do this.)
+#tags_to_report = 'billable' # If you have a tag for billable hours and wish to report on them, set it here.
+# Instead of the above line, tag IDs are taken as arguments.
+
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -69,68 +81,122 @@ def colorText(color, text):
     if terminalColors:
         return color + text + bcolors.ENDC
     else:
-        return text
+        return text       
 
 def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
     return next_month - datetime.timedelta(days=next_month.day)
 
 
-if len(sys.argv) == 1:
-    data['since'] = datetime.date.today().replace(day=1) #First day of current month
-    data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month
-    print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
-elif (len(sys.argv) == 3):
-    data['since'] = sys.argv[1]
-    data['until'] = sys.argv[2]
-else:
-    print colorText(bcolors.FAIL, "Usage:  %s  startdate  enddate" % sys.argv[0])
-    print colorText(bcolors.FAIL, "[startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23]")
-    print colorText(bcolors.FAIL, "(Or provide no arguments, to report on the current month)")
-    sys.exit(1)
+
+def main(argv):
+    desc="""This program provides some basic command line Toggl reporting."""
+    epilog="""Based on Matthew Downey's TogglPy library (https://github.com/matthewdowney/TogglPy/).
+    This script: credit (C) Mikey Beck https://mikeybeck.com."""
+    parser = argparse.ArgumentParser(description=desc,epilog=epilog)
+    parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
+    parser.add_argument("--tagids",help="Tag IDs to report on.  Do not provide this argument to ignore tags.",nargs='*',required=False)
+    parser.add_argument("--clientids",help="Client IDs to report on.  Do not provide this argument to report on all clients.",nargs='*',required=False)
+    parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
+    parser.add_argument("--addtags",help="Adds tag to all returned time entries.",nargs='*',required=False)
+    parser.add_argument("--debug",help="Prints debugging info",action="store_true",required=False)
+
+    #Helper commands: 
+    parser.add_argument("--getclientids",help="Prints client names and IDs only.",action="store_true",required=False)
+   
+
+    x=parser.parse_args()
+
+    # Print client names & IDs
+    if x.getclientids:
+        for client in toggl.getClients():
+            print "Client name: %s\t\t ID: %s" % (client['name'], client['id'])
+        exit()
+
+    if x.addtags:
+        timeentryIDs = ""
+
+
+    '''
+curl -v -u 10768746f747204579627f3e37edc929:api_token \
+    -H "Content-Type: application/json" \
+    -d '{"time_entry":{"tags":["testtaggy","billed"], "tag_action": "add"}}' \
+    -X PUT https://www.toggl.com/api/v8/time_entries/520405718
+'''
+
+    global terminalColors
+
+    terminalColors = True
+
+    if x.nocolors:
+        terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
+        
+
+    if x.period:
+        data['since'] = x.period[0]
+        data['until'] = x.period[1]
+    else:
+        data['since'] = datetime.date.today().replace(day=1) #First day of current month
+        data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month
+        print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
+
+    if x.tagids:
+        for tagid in x.tagids:
+            data['tag_ids'] += tagid + "," # Trailing comma doesn't matter so this is ok
+
+    if x.clientids:
+        for clientid in x.clientids:
+            data['client_ids'] += clientid + "," # Trailing comma doesn't matter so this is ok
+
+    if x.debug:
+        print data
+
+
+    detailedData = toggl.getDetailedReport(data)
+
+    totalTime = 0
+    num_items = 0
+
+    item_count = detailedData['total_count']
+
+    print str(item_count) + " entries"
+
+    detailedData2 = dict(detailedData)
+
+    while item_count > 0:
+        for timeentry in detailedData['data']:
+            if x.debug:
+                   print timeentry
+
+            if x.addtags:
+                timeentryIDs += str(timeentry['id'])+","
+
+                
+
+            detailedData2.update(timeentry)
+
+
+            totalTime += timeentry['dur']
+            num_items += 1
+            item_count -= 1
+
+            if num_items % 50 == 0: #Page through data (there are 50 items per page)
+                data['page'] += 1
+                detailedData = toggl.getDetailedReport(data)
+                #print "page " + str(data['page'])
 
 
 
+    print "Total hours: " + str(round(totalTime / float(3600000), 2))
 
+    sortedData = sorted(detailedData2['data'])
+    sortedData = multikeysort(detailedData2['data'], ['client', 'project', 'start'])
 
+    client = ""
+    project = ""
+    projDuration = datetime.timedelta(0)
 
-detailedData = toggl.getDetailedReport(data)
-
-totalTime = 0
-num_items = 0
-
-item_count = detailedData['total_count']
-
-print str(item_count) + " entries"
-
-detailedData2 = dict(detailedData)
-
-while item_count > 0:
-    for timeentry in detailedData['data']:
-        detailedData2.update(timeentry)
-
-        totalTime += timeentry['dur']
-        num_items += 1
-        item_count -= 1
-
-        if num_items % 50 == 0: #Page through data (there are 50 items per page)
-            data['page'] += 1
-            detailedData = toggl.getDetailedReport(data)
-            #print "page " + str(data['page'])
-
-
-
-
-print "Total hours: " + str(totalTime / 3600000)
-
-sortedData = sorted(detailedData2['data'])
-sortedData = multikeysort(detailedData2['data'], ['client', 'project', 'start'])
-
-client = ""
-project = ""
-projDuration = datetime.timedelta(0)
-
-for timeentry in sortedData:
+    for timeentry in sortedData:
 
         if project != timeentry['project'] and projDuration != datetime.timedelta(0):
             print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration))
@@ -157,5 +223,28 @@ for timeentry in sortedData:
         client = timeentry['client']
         project = timeentry['project']
 
-print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
+    print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
 
+
+
+    #Apply tag to all returned time entries
+    if x.addtags:
+        tags = x.addtags
+
+        if x.debug:
+            print "Tags: " + tags
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.addTags(timeentryIDs, tags)
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
