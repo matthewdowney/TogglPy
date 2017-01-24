@@ -19,7 +19,7 @@ Client Name
         Project Duration: HH:MM
 
 ###Example output:
-3 entries
+3 entries    
 Total hours: 2
 
 Joe Bloggs
@@ -34,6 +34,57 @@ John Doe
         09/01/2017 10:00AM - 10:15AM (00:15) Recovering data
         13/01/2017 10:30AM - 10:40AM (00:10) Restoring website
         Project Duration: 00:25
+
+
+## Help:
+python run.py --help
+usage: run.py [-h] [--period PERIOD PERIOD] [--tagids [TAGIDS [TAGIDS ...]]]
+              [--nocolors] [--debug]
+
+This program provides some basic command line Toggl reporting.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --period PERIOD PERIOD
+                        Time period to report on. Usage: --period startdate
+                        enddate [where startdate & enddate take the format
+                        yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this
+                        argument, to report on the current month)
+  --tagids [TAGIDS [TAGIDS ...]]
+                        Tag IDs to report on. Do not provide this argument to
+                        ignore tags.
+  --nocolors            Prints plain output, useful if piping to a file
+  --addtags TAG         Adds tag to all returned time entries
+  --debug               Prints debugging info
+
+
+Based on Matthew Downey's TogglPy library
+(https://github.com/matthewdowney/TogglPy/). 
+This script: credit (C) Mikey Beck https://mikeybeck.com.
+
+
+## Example input and output:
+![example input](example-in.png)
+
+## run.py TODO:
+Remove tags from time entries
+Better documentation
+
+## run.py DONE:
+Ability to add tags to time (with --addtags parameter).  Run without using this command first as a dry-run, then add this parameter to apply the tag to all returned time entries.
+Reporting on specific clients (with --clientids parameter)   
+Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).
+
+## How to get client IDs for use with --clientids parameter:
+Use the --getclientids parameter, e.g. ```python run.py --getclientids```   
+This will print all client names and IDs.
+
+
+## Create a tag and get its ID (this is the only way I know how to get a tag's ID at the moment):
+``curl -v -u API_TOKEN:api_token \
+    -H "Content-Type: application/json" \
+    -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \
+    -X POST https://www.toggl.com/api/v8/tags``
 
 
 #Features
@@ -191,3 +242,9 @@ if datetime.datetime.today().weekday() not in (4, 5):
 ```shell
 (crontab -l ; echo "0 22 * * * toggl_entry.py")| crontab -
 ```
+
+
+#### Changelog:
+24/01/2017: 
+- Added in PUT request functionality to Toggl class.
+- Implemented --addtags parameter
