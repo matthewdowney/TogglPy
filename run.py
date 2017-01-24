@@ -232,7 +232,7 @@ curl -v -u 10768746f747204579627f3e37edc929:api_token \
         tags = x.addtags
 
         if x.debug:
-            print "Tags: " + tags
+            print "Tags: " + str(tags)
             print "Time entry IDs: " + timeentryIDs
         timeentryIDs = timeentryIDs[:-1] #Remove last comma
 
