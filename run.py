@@ -7,13 +7,19 @@ import argparse
 import urllib2
 import json
 
+import credentials
+
+API_KEY      = credentials.data['API_KEY']
+WORKSPACE_ID = credentials.data['WORKSPACE_ID']
+USER_AGENT   = credentials.data['USER_AGENT']
+
 toggl = Toggl()
 
-toggl.setAPIKey('API_KEY') 
+toggl.setAPIKey(API_KEY)
 
 data = {
     'workspace_id': WORKSPACE_ID,
-    'user_agent': 'USER_AGENT',
+    'user_agent': USER_AGENT,
     'page': 1,
     'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
     'client_ids': ''
@@ -99,6 +105,7 @@ def main(argv):
     parser.add_argument("--clientids",help="Client IDs to report on.  Do not provide this argument to report on all clients.",nargs='*',required=False)
     parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
     parser.add_argument("--addtags",help="Adds tag to all returned time entries.",nargs='*',required=False)
+    parser.add_argument("--removetags",help="Removes tag from all returned time entries.",nargs='*',required=False)
     parser.add_argument("--debug",help="Prints debugging info",action="store_true",required=False)
 
     #Helper commands: 
@@ -113,15 +120,15 @@ def main(argv):
             print "Client name: %s\t\t ID: %s" % (client['name'], client['id'])
         exit()
 
-    if x.addtags:
+    if x.addtags or x.removetags:
         timeentryIDs = ""
 
 
     '''
-curl -v -u 10768746f747204579627f3e37edc929:api_token \
+curl -v -u API_TOKEN:api_token \
     -H "Content-Type: application/json" \
     -d '{"time_entry":{"tags":["testtaggy","billed"], "tag_action": "add"}}' \
-    -X PUT https://www.toggl.com/api/v8/time_entries/520405718
+    -X PUT https://www.toggl.com/api/v8/time_entries/TIME_ENTRY_ID
 '''
 
     global terminalColors
@@ -168,13 +175,10 @@ curl -v -u 10768746f747204579627f3e37edc929:api_token \
             if x.debug:
                    print timeentry
 
-            if x.addtags:
+            if x.addtags or x.removetags:
                 timeentryIDs += str(timeentry['id'])+","
 
-                
-
             detailedData2.update(timeentry)
-
 
             totalTime += timeentry['dur']
             num_items += 1
@@ -237,6 +241,17 @@ curl -v -u 10768746f747204579627f3e37edc929:api_token \
         timeentryIDs = timeentryIDs[:-1] #Remove last comma
 
         toggl.addTags(timeentryIDs, tags)
+
+    #Remove tag from all returned time entries
+    if x.removetags:
+        tags = x.removetags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.removeTags(timeentryIDs, tags)
 
 
 

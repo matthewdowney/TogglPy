@@ -9,8 +9,8 @@ Make sure to set your API key, workspace ID and user agent at the top of the scr
 ##Output format and example output:
 
 ###Output format:
-N entries
-Total hours: X
+N entries   
+Total hours: X   
 
 Client Name
 
@@ -55,11 +55,12 @@ optional arguments:
                         ignore tags.
   --nocolors            Prints plain output, useful if piping to a file
   --addtags TAG         Adds tag to all returned time entries
+  --removetags TAG      Removes tag from all returned time entries
   --debug               Prints debugging info
 
 
-Based on Matthew Downey's TogglPy library
-(https://github.com/matthewdowney/TogglPy/). 
+Based on Matthew Downey's TogglPy library   
+(https://github.com/matthewdowney/TogglPy/).    
 This script: credit (C) Mikey Beck https://mikeybeck.com.
 
 
@@ -67,24 +68,30 @@ This script: credit (C) Mikey Beck https://mikeybeck.com.
 ![example input](example-in.png)
 
 ## run.py TODO:
-Remove tags from time entries
+  
 Better documentation
 
 ## run.py DONE:
-Ability to add tags to time (with --addtags parameter).  Run without using this command first as a dry-run, then add this parameter to apply the tag to all returned time entries.
+Ability to remove tags from time entries (with --removetags parameter). 
+Ability to add tags to time (with --addtags parameter).  Run without using this command first as a dry-run, then add this parameter to apply the tag to all returned time entries.   
 Reporting on specific clients (with --clientids parameter)   
-Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).
+Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).   
 
 ## How to get client IDs for use with --clientids parameter:
 Use the --getclientids parameter, e.g. ```python run.py --getclientids```   
 This will print all client names and IDs.
 
 
-## Create a tag and get its ID (this is the only way I know how to get a tag's ID at the moment):
-``curl -v -u API_TOKEN:api_token \
-    -H "Content-Type: application/json" \
-    -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \
+## Create a tag and get its ID (this is the only way I know how to get a tag's ID at the moment):   
+``curl -v -u API_TOKEN:api_token \   
+    -H "Content-Type: application/json" \   
+    -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \   
     -X POST https://www.toggl.com/api/v8/tags``
+
+##To get all entries without a tag:
+Set `data['tag_ids']` to 0  (i.e. use `--tagids 0`)
+This can be useful for finding unbilled time.  Run `python run.py --tagids 0 --addtags unbilled` to add an `unbilled` tag to all entries with no tags.
+
 
 
 #Features
@@ -245,6 +252,8 @@ if datetime.datetime.today().weekday() not in (4, 5):
 
 
 #### Changelog:
+25/01/2017: 
+- Implemented --removetags parameter
 24/01/2017: 
 - Added in PUT request functionality to Toggl class.
 - Implemented --addtags parameter

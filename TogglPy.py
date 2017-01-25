@@ -354,10 +354,19 @@ class Toggl():
             }
         }
 
+        response = self.putRequest(Endpoints.TIME_ENTRIES+ "/"+time_IDs, parameters=data)
+        return self.decodeJSON(response)
 
-#        tags = ["testtaggy","billed","newtesttag3"]
-#        tag_action = "add"
-#        data['time_entry'] = {"tags":tags, "tag_action":tag_action}
+
+    def removeTags(self, time_IDs, tags):
+        '''removes tags from time_IDs'''
+        #e.g. {"time_entry":{"tags":["billed","productive"], "tag_action": "remove"}}
+        data = {
+            "time_entry": {
+            "tags": tags,
+            "tag_action": "remove"
+            }
+        }
 
         response = self.putRequest(Endpoints.TIME_ENTRIES+ "/"+time_IDs, parameters=data)
         return self.decodeJSON(response)
