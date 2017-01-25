@@ -37,6 +37,9 @@ John Doe
 
 
 ## Help:
+Add your API key, workspace ID, and user agent string to the `credentials.py` file.   
+Then run `python run.py`.
+
 python run.py --help
 usage: run.py [-h] [--period PERIOD PERIOD] [--tagids [TAGIDS [TAGIDS ...]]]
               [--nocolors] [--debug]
@@ -68,12 +71,11 @@ This script: credit (C) Mikey Beck https://mikeybeck.com.
 ![example input](example-in.png)
 
 ## run.py TODO:
-  
 Better documentation
 
 ## run.py DONE:
-Ability to remove tags from time entries (with --removetags parameter). 
-Ability to add tags to time (with --addtags parameter).  Run without using this command first as a dry-run, then add this parameter to apply the tag to all returned time entries.   
+Ability to remove tags from time entries (with --removetags parameter).    
+Ability to add tags to time (with --addtags parameter).  Run without using this command first as a dry-run, then add this parameter to apply the tag to all returned time entries.     
 Reporting on specific clients (with --clientids parameter)   
 Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).   
 
@@ -83,9 +85,9 @@ This will print all client names and IDs.
 
 
 ## Create a tag and get its ID (this is the only way I know how to get a tag's ID at the moment):   
-``curl -v -u API_TOKEN:api_token \   
-    -H "Content-Type: application/json" \   
-    -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \   
+``curl -v -u API_TOKEN:api_token \    
+    -H "Content-Type: application/json" \    
+    -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \    
     -X POST https://www.toggl.com/api/v8/tags``
 
 ##To get all entries without a tag:
@@ -253,7 +255,9 @@ if datetime.datetime.today().weekday() not in (4, 5):
 
 #### Changelog:
 25/01/2017: 
-- Implemented --removetags parameter
-24/01/2017: 
+- Implemented --removetags parameter   
+- Added credentials file (No more committing my API key)   
+   
+24/01/2017:   
 - Added in PUT request functionality to Toggl class.
 - Implemented --addtags parameter
