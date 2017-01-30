@@ -43,7 +43,7 @@ response = toggl.request("https://www.toggl.com/api/v8/clients")
 
 # print the client name and id for each client in the response
 # list of returned values can be found in the Toggl docs (https://github.com/toggl/toggl_api_docs/blob/master/chapters/clients.md)
-for client in reponse:
+for client in response:
     print "Client name: %s  Client id: %s" % (client['name'], client['id'])
 ```
 Or, if you want to add some data to your request:
