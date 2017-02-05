@@ -8,6 +8,7 @@ import urllib2
 import json
 
 import credentials
+import os
 
 API_KEY      = credentials.data['API_KEY']
 WORKSPACE_ID = credentials.data['WORKSPACE_ID']
@@ -17,13 +18,6 @@ toggl = Toggl()
 
 toggl.setAPIKey(API_KEY)
 
-data = {
-    'workspace_id': WORKSPACE_ID,
-    'user_agent': USER_AGENT,
-    'page': 1,
-    'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
-    'client_ids': ''
-}
 
 # Something like this next line would be ideal but it's not currently easy to access task IDs.
 # (The only way I currently know how is to create a new task using the API and get the ID from the return value.
@@ -102,7 +96,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description=desc,epilog=epilog)
     parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
     parser.add_argument("--tagids",help="Tag IDs to report on.  Do not provide this argument to ignore tags.",nargs='*',required=False)
-    parser.add_argument("--clientids",help="Client IDs to report on.  Do not provide this argument to report on all clients.",nargs='*',required=False)
+    parser.add_argument("--clients",help="Clients to report on.  Can be names or IDs.  Do not provide this argument to report on all clients.",nargs='*',required=False)
     parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
     parser.add_argument("--addtags",help="Adds tag to all returned time entries.",nargs='*',required=False)
     parser.add_argument("--removetags",help="Removes tag from all returned time entries.",nargs='*',required=False)
@@ -110,14 +104,33 @@ def main(argv):
 
     #Helper commands: 
     parser.add_argument("--getclientids",help="Prints client names and IDs only.",action="store_true",required=False)
+
+    data = {
+        'workspace_id': WORKSPACE_ID,
+        'user_agent': USER_AGENT,
+        'page': 1,
+        'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
+        'client_ids': ''
+    }
    
 
     x=parser.parse_args()
 
     # Print client names & IDs
     if x.getclientids:
+        
+        filename = 'data.json'
+        with open(filename, 'r') as f:
+            jsondata = json.load(f)
+
         for client in toggl.getClients():
             print "Client name: %s\t\t ID: %s" % (client['name'], client['id'])
+            jsondata['clients'][client['name']] = client['id'] # Add client names & IDs to data.json file
+
+        os.remove(filename)
+        with open(filename, 'w') as f:
+            json.dump(jsondata, f, indent=4)
+
         exit()
 
     if x.addtags or x.removetags:
@@ -151,9 +164,21 @@ curl -v -u API_TOKEN:api_token \
         for tagid in x.tagids:
             data['tag_ids'] += tagid + "," # Trailing comma doesn't matter so this is ok
 
-    if x.clientids:
-        for clientid in x.clientids:
-            data['client_ids'] += clientid + "," # Trailing comma doesn't matter so this is ok
+    if x.clients:
+        filename = 'data.json'
+        with open(filename, 'r') as f:
+            jsondata = json.load(f)
+
+        for client in x.clients:
+            # If digits, assume client ID.  If chars, assume client name and look up ID in data.json.
+            if client.isdigit() == True:
+                # We have a client ID
+                clientid = client
+            else:
+                # We have client name, get client ID from data.json.
+                clientid = jsondata['clients'][client]
+
+            data['client_ids'] += str(clientid) + "," # Trailing comma doesn't matter so this is ok
 
     if x.debug:
         print data

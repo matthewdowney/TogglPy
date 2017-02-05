@@ -82,6 +82,7 @@ Make distinction between billed & unbilled time and allow reporting on either (u
 ## How to get client IDs for use with --clientids parameter:
 Use the --getclientids parameter, e.g. ```python run.py --getclientids```   
 This will print all client names and IDs.
+This also adds the client names & IDs to the data.json file, enabling the use of client names (rather than just IDs) with the --clients parameter.   
 
 
 ## Create a tag and get its ID (this is the only way I know how to get a tag's ID at the moment):   
