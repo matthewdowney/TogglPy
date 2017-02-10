@@ -95,7 +95,7 @@ def main(argv):
     This script: credit (C) Mikey Beck https://mikeybeck.com."""
     parser = argparse.ArgumentParser(description=desc,epilog=epilog)
     parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
-    parser.add_argument("--tagids",help="Tag IDs to report on.  Do not provide this argument to ignore tags.",nargs='*',required=False)
+    parser.add_argument("--tags",help="Tags to report on.  Can be names or IDs.  Do not provide this argument to ignore tags.",nargs='*',required=False)
     parser.add_argument("--clients",help="Clients to report on.  Can be names or IDs.  Do not provide this argument to report on all clients.",nargs='*',required=False)
     parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
     parser.add_argument("--addtags",help="Adds tag to all returned time entries.",nargs='*',required=False)
@@ -160,9 +160,22 @@ curl -v -u API_TOKEN:api_token \
         data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month
         print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
 
-    if x.tagids:
-        for tagid in x.tagids:
-            data['tag_ids'] += tagid + "," # Trailing comma doesn't matter so this is ok
+    if x.tags:
+        filename = 'data.json'
+        with open(filename, 'r') as f:
+            jsondata = json.load(f)
+
+        for tag in x.tags:
+            # If digits, assume tag ID.  If chars, assume tag name and look up ID in data.json.
+            if tag.isdigit() == True:
+                # We have a tag ID
+                tagid = tag
+            else:
+                # We have tag name, get tag ID from data.json.
+                tagid = jsondata['tags'][tag]
+
+            data['tag_ids'] += str(tagid) + "," # Trailing comma doesn't matter so this is ok
+
 
     if x.clients:
         filename = 'data.json'
@@ -277,9 +290,6 @@ curl -v -u API_TOKEN:api_token \
         timeentryIDs = timeentryIDs[:-1] #Remove last comma
 
         toggl.removeTags(timeentryIDs, tags)
-
-
-
 
 
 

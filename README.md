@@ -41,7 +41,7 @@ Add your API key, workspace ID, and user agent string to the `credentials.py` fi
 Then run `python run.py`.
 
 python run.py --help   
-usage: run.py [-h] [--period PERIOD PERIOD] [--tagids [TAGIDS [TAGIDS ...]]]   
+usage: run.py [-h] [--period PERIOD PERIOD] [--tags [TAG [TAG ...]]]   
               [--nocolors] [--debug]   
 
 This program provides some basic command line Toggl reporting.   
@@ -53,9 +53,9 @@ optional arguments:
                         enddate [where startdate & enddate take the format   
                         yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this   
                         argument, to report on the current month)   
-  --tagids [TAGIDS [TAGIDS ...]]   
-                        Tag IDs to report on. Do not provide this argument to   
-                        ignore tags.   
+  --tags [TAG [TAG ...]]   
+                        Tags to report on. Can be names or IDs.    
+                        Do not provide this argument to ignore tags.   
   --nocolors            Prints plain output, useful if piping to a file   
   --addtags TAG         Adds tag to all returned time entries   
   --removetags TAG      Removes tag from all returned time entries   
@@ -92,9 +92,12 @@ This also adds the client names & IDs to the data.json file, enabling the use of
     -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \    
     -X POST https://www.toggl.com/api/v8/tags``
 
+The tag names and IDs can be added the the data.json file.  Doing this enables the use of tag names as well as IDs with the --tags parameter.   
+
+
 ##To get all entries without a tag:
-Set `data['tag_ids']` to 0  (i.e. use `--tagids 0`)
-This can be useful for finding unbilled time.  Run `python run.py --tagids 0 --addtags unbilled` to add an `unbilled` tag to all entries with no tags.
+Set `data['tag_ids']` to 0  (i.e. use `--tags 0`)
+This can be useful for finding unbilled time.  Run `python run.py --tags 0 --addtags unbilled` to add an `unbilled` tag to all entries with no tags.
 
 
 
@@ -256,6 +259,9 @@ if datetime.datetime.today().weekday() not in (4, 5):
 
 
 #### Changelog:
+
+10/02/2017: 
+- Replaced --tagids parameter with --tags.  --tags parameter takes tag names as well as IDs. (Requires user to fill out tag info in data.json file.)
 
 05/02/2017: 
 - Replaced --clientids parameter with --clients.  --clients parameter takes client names as well as IDs.   
