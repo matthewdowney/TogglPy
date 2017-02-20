@@ -128,7 +128,6 @@ class Toggl():
                         projectid=None, projectname=None,
                         description=None,
                         clientname=None,
-                        start_datetime=None,
                         year=None, month=None, day=None,
                         hour=None, minute=None):
         """
