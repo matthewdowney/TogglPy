@@ -124,18 +124,25 @@ class Toggl():
         response = self.postRequest(Endpoints.STOP_TIME(entryid))
         return self.decodeJSON(response)
 
-    def createTimeEntry(self, hourduration, projectid=None, projectname=None,
-                        clientname=None, year=None, month=None, day=None, hour=None):
+    def createTimeEntry(self, hourduration,
+                        projectid=None, projectname=None,
+                        description=None,
+                        clientname=None,
+                        start_datetime=None,
+                        year=None, month=None, day=None,
+                        hour=None, minute=None):
         """
         Creating a custom time entry, minimum must is hour duration and project param
         :param hourduration:
         :param projectid: Not required if projectname given
         :param projectname: Not required if projectid was given
+        :param description: Optional
         :param clientname: Can speed up project query process
-        :param year: Taken from now() if not provided
-        :param month: Taken from now() if not provided
-        :param day: Taken from now() if not provided
-        :param hour: Taken from now() if not provided
+        :param year: Taken from utcnow() if not provided
+        :param month: Taken from utcnow() if not provided
+        :param day: Taken from utcnow() if not provided
+        :param hour: Taken from utcnow() if not provided
+        :param minute: Taken from utcnow() if not provided
         :return: response object from post call
         """
         data = {
@@ -151,16 +158,21 @@ class Toggl():
                 print 'Too many missing parameters for query'
                 exit(1)
 
-        year = datetime.now().year if not year else year
-        month = datetime.now().month if not month else month
-        day = datetime.now().day if not day else day
-        hour = datetime.now().hour if not hour else hour
+        year = datetime.utcnow().year if not year else year
+        month = datetime.utcnow().month if not month else month
+        day = datetime.utcnow().day if not day else day
+        hour = datetime.utcnow().hour if not hour else hour
+        minute = datetime.utcnow().minute if not minute else minute
+        timestruct = datetime(
+                        year, month, day, hour, minute
+                     ).isoformat() + '.000Z'
 
-        timestruct = datetime(year, month, day, hour-2).isoformat() + '.000Z'
         data['time_entry']['start'] = timestruct
         data['time_entry']['duration'] = hourduration*3600
         data['time_entry']['pid'] = projectid
         data['time_entry']['created_with'] = 'NAME'
+        if description is not None:
+            data['time_entry']['description'] = description
 
         response = self.postRequest(Endpoints.TIME_ENTRIES, parameters=data)
         return self.decodeJSON(response)
