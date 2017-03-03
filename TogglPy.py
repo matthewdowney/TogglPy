@@ -153,6 +153,13 @@ class Toggl():
                 print 'Too many missing parameters for query'
                 exit(1)
 
+        if description:
+            data['time_entry']['description'] = description
+
+        if taskid:
+            data['time_entry']['tid'] = taskid
+
+
         year = datetime.now().year if not year else year
         month = datetime.now().month if not month else month
         day = datetime.now().day if not day else day
@@ -163,8 +170,6 @@ class Toggl():
         data['time_entry']['duration'] = hourduration*3600
         data['time_entry']['pid'] = projectid
         data['time_entry']['created_with'] = 'NAME'
-        data['time_entry']['tid'] = taskid
-        data['time_entry']['description'] = description
 
         response = self.postRequest(Endpoints.TIME_ENTRIES, parameters=data)
         return self.decodeJSON(response)
