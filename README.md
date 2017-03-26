@@ -1,14 +1,14 @@
-#TogglPy
+# TogglPy
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
-#This fork:
+# This fork:
 Includes an example script, run.py, which you can either use as-is or as a starter for your own command line Toggl time reporting app.
 Make sure to set your API key, workspace ID and user agent to the credentials.py file first.
 
 
-##Output format and example output:
+## Output format and example output:
 
-###Output format:
+### Output format:
 N entries   
 Total hours: X   
 
@@ -18,7 +18,7 @@ Client Name
         dd/mm/yyyy hh:mmAM - hh:mmPM (HH:MM) Task
         Project Duration: HH:MM
 
-###Example output:
+### Example output:
 3 entries    
 Total hours: 2
 
@@ -101,7 +101,7 @@ This can be useful for finding unbilled time.  Run `python run.py --tags 0 --add
 
 
 
-#Features
+# Features
 * Make requests against any (Toggl) API endpoint with request data as a dictionary
 * Generate and save PDFs of summary, weekly, or detailed reports
 * Fetch reports as JSON
@@ -110,7 +110,7 @@ This can be useful for finding unbilled time.  Run `python run.py --tags 0 --add
 * Query projects, by client, or by a single name
 * Add custom time entries
 
-#Setup
+# Setup
 + Download the project, or download **TogglPy.py** for local usage
 + Import the content: 
 ```python
@@ -130,8 +130,8 @@ toggl.setAPIKey('<API-TOKEN>')
 ```
 
 
-#I learn best by examples:
-###Manual GET requests against any Toggl endpoint:
+# I learn best by examples:
+### Manual GET requests against any Toggl endpoint:
 ```python
 from TogglPy import Toggl
 
@@ -156,7 +156,7 @@ data = {
 response = toggl.request("https://www.toggl.com/api/v8/some/endpoint", parameters=data)
 ```
 
-###Making a POST request to any Toggl endpoint:
+### Making a POST request to any Toggl endpoint:
 ```python
 
 data = { 
@@ -175,7 +175,7 @@ response = toggl.postRequest("https://www.toggl.com/api/v8/projects", parameters
 ```
 
 
-###Generating PDF reports:
+### Generating PDF reports:
 ```python
 # specify that we want reports from this week
 data = {
@@ -190,7 +190,7 @@ toggl.getDetailedReportPDF(data, "detailed-report.pdf")
 toggl.getSummaryReportPDF(data, "summary-report.pdf")
 ```
 
-###Finding workspaces and clients
+### Finding workspaces and clients
 This will print some raw data that will give you all the info you need to identify clients and workspaces quickly:
 ```python
 print toggl.getWorkspaces()
