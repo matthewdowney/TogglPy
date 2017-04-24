@@ -66,8 +66,11 @@ def roundTime(dt=None, roundTo=60):
    return dt + datetime.timedelta(0,rounding-seconds,-dt.microsecond)
 
 def formatDuration(duration):
-    durHours = str(duration.seconds//3600)
-    durMins = str((duration.seconds//60)%60)
+
+    seconds = int(duration.total_seconds()) #total_seconds required to prevent periods longer than 24hrs breaking
+    durHours = str(seconds//3600)
+    durMins = str((seconds//60)%60)
+
     if int(durHours) < 10:
         durHours = "0"+durHours
     if int(durMins) < 10:
@@ -251,8 +254,8 @@ curl -v -u API_TOKEN:api_token \
             print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
             #print "\t" + timeentry['project'] 
 
-        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #13:00 is the timezone.  Might need to change this
-        end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
+        end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+12:00'),roundTo=5*60)
         duration = abs(end - start)
         projDuration += duration
         duration = formatDuration(duration)
