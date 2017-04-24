@@ -260,6 +260,10 @@ if datetime.datetime.today().weekday() not in (4, 5):
 
 #### Changelog:
 
+24/04/2017:
+- Bugfix, periods longer than 24 hours work now.
+- Bugfix, +12:00 timezone now required for API to work.
+
 10/02/2017: 
 - Replaced --tagids parameter with --tags.  --tags parameter takes tag names as well as IDs. (Requires user to fill out tag info in data.json file.)
 
