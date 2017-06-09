@@ -66,7 +66,7 @@ def roundTime(dt=None, roundTo=60):
    return dt + datetime.timedelta(0,rounding-seconds,-dt.microsecond)
 
 def formatDuration(duration):
-
+    
     seconds = int(duration.total_seconds()) #total_seconds required to prevent periods longer than 24hrs breaking
     durHours = str(seconds//3600)
     durMins = str((seconds//60)%60)
@@ -97,7 +97,7 @@ def main(argv):
     epilog="""Based on Matthew Downey's TogglPy library (https://github.com/matthewdowney/TogglPy/).
     This script: credit (C) Mikey Beck https://mikeybeck.com."""
     parser = argparse.ArgumentParser(description=desc,epilog=epilog)
-    parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
+    parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month.  Omit second date to report from first date up to today.)",nargs='*',required=False)
     parser.add_argument("--tags",help="Tags to report on.  Can be names or IDs.  Do not provide this argument to ignore tags.",nargs='*',required=False)
     parser.add_argument("--clients",help="Clients to report on.  Can be names or IDs.  Do not provide this argument to report on all clients.",nargs='*',required=False)
     parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
@@ -157,7 +157,10 @@ curl -v -u API_TOKEN:api_token \
 
     if x.period:
         data['since'] = x.period[0]
-        data['until'] = x.period[1]
+        try:
+            data['until'] = x.period[1]
+        except IndexError:
+            data['until'] = datetime.datetime.today().strftime('%Y-%m-%d') #Today
     else:
         data['since'] = datetime.date.today().replace(day=1) #First day of current month
         data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month

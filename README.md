@@ -259,6 +259,8 @@ if datetime.datetime.today().weekday() not in (4, 5):
 
 
 #### Changelog:
+09/06/2017:
+- Added ability to omit second date from --period parameter, to report from first date to today.
 
 24/04/2017:
 - Bugfix, periods longer than 24 hours work now.
