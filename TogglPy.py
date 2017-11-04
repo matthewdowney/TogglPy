@@ -306,6 +306,17 @@ class Toggl():
         with open(filename, "wb") as pdf:
             pdf.write(filedata)
 
+    def getDetailedReportCSV(self, data, filename):
+        '''save a detailed report as a pdf'''
+        # get the raw pdf file data
+        filedata = self.requestRaw(Endpoints.REPORT_DETAILED + ".csv", parameters=data)
+
+        # write the data to a file
+        with open(filename, "wb") as csv:
+            csv.write(filedata)
+
+
+
     def getDetailedReportCSV(self, data, filename=None):
         '''save a detailed report as a pdf'''
         # get the raw pdf file data
