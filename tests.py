@@ -29,8 +29,14 @@ class TogglPyTests(unittest.TestCase):
         data = {
             'workspace_id': self.workspace_id,
         }
-        self.toggl.getDetailedReportCSV(data, 'data.csv')
-        self.assertTrue(os.path.isfile("data.csv"))
+        csvfile = 'data.csv'
+        self.toggl.getDetailedReportCSV(data, csvfile)
+        self.assertTrue(os.path.isfile(csvfile))
+        os.remove(csvfile)
+
+        data = self.toggl.getDetailedReportCSV(data)
+        self.assertTrue(data is not None)
+
 
     def test_getDetailedReport(self):
         data = {
@@ -52,3 +58,6 @@ class TogglPyTests(unittest.TestCase):
         self.assertTrue('task' in dr)
         self.assertTrue('user' in dr)
         self.assertTrue('project' in dr)
+
+if __name__ == '__main__':
+    unittest.main()

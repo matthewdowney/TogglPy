@@ -1,20 +1,25 @@
 import os
 import unittest
-import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from TogglPy import Toggl
 
+#this test demonstrates how to link up the toggl API into a google sheet
+#in order to do this, you'll need to first setup your google account developer environment
+#to do this, you can follow the instructions here: http://tinaja.computer/2017/10/27/gspread.html
+#additional information about the spread API here: https://github.com/burnash/gspread
+
+#as such, to run this test you'll need to define the following env variables
+#TOGGL_API_KEY : your toggl api key
+#WORKSPACE_ID: a workspace id that you'd like to dump data for
+#KEYFILE: the full path to your google suite keyfile (keep this secret/safe!)
+#SHEET_URL: the url of the google sheet you are writing to
 
 class Toggl2GSuiteTest(unittest.TestCase):
     def setUp(self):
         self.api_key = os.environ['TOGGL_API_KEY']
         self.toggl = Toggl()
         self.toggl.setAPIKey(self.api_key)
-
-    def test_connect(self):
-        response = self.toggl.request("https://www.toggl.com/api/v8/clients")
-        self.assertTrue(response is not None)
 
     # see https://stackoverflow.com/questions/19153462/get-excel-style-column-names-from-column-number
     LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -28,23 +33,13 @@ class Toggl2GSuiteTest(unittest.TestCase):
             result[:0] = Toggl2GSuiteTest.LETTERS[rem]
         return ''.join(result) + str(row)
 
-    def test_get_csv(self):
+    def test_toggl2gsuite(self):
         # have to do this year by year
         data = {
-            'workspace_id': 1543644,
-            'since': '2016-01-01',
-            'until': '2016-12-31'
+            'workspace_id': os.environ['WORKSPACE_ID'],
         }
-        y1 = self.toggl.getDetailedReport(data)
+        y = self.toggl.getDetailedReport(data)
 
-        data = {
-            'workspace_id': 1543644,
-            'since': '2017-01-01',
-            'until': datetime.datetime.today().strftime('%Y-%m-%d')
-        }
-        y2 = self.toggl.getDetailedReport(data)
-
-        y = y1['data'] + y2['data']
 
         credentials = ServiceAccountCredentials.from_json_keyfile_name(
             os.environ['KEYFILE'],
@@ -57,7 +52,7 @@ class Toggl2GSuiteTest(unittest.TestCase):
         wrote_header = False
         columns_to_write = ['user', 'updated', 'start', 'end', 'client', 'project', 'description', 'is_billable',
                             'billable']
-        for row_idx, rec in enumerate(y):
+        for row_idx, rec in enumerate(y['data']):
             if wrote_header == False:
                 for col_idx, header in enumerate(columns_to_write):
                     worksheet.update_acell(Toggl2GSuiteTest.excel_style(row_idx + 1, col_idx + 1), header)
@@ -65,3 +60,6 @@ class Toggl2GSuiteTest(unittest.TestCase):
             else:
                 for col_idx, header in enumerate(columns_to_write):
                     worksheet.update_acell(Toggl2GSuiteTest.excel_style(row_idx + 1, col_idx + 1), rec[header])
+
+if __name__ == '__main__':
+    unittest.main()
