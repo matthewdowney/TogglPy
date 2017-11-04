@@ -52,14 +52,14 @@ class Toggl2GSuiteTest(unittest.TestCase):
         wrote_header = False
         columns_to_write = ['user', 'updated', 'start', 'end', 'client', 'project', 'description', 'is_billable',
                             'billable']
+        cell_row = 0
         for row_idx, rec in enumerate(y['data']):
             if wrote_header == False:
                 for col_idx, header in enumerate(columns_to_write):
                     worksheet.update_acell(Toggl2GSuiteTest.excel_style(row_idx + 1, col_idx + 1), header)
                 wrote_header = True
-            else:
-                for col_idx, header in enumerate(columns_to_write):
-                    worksheet.update_acell(Toggl2GSuiteTest.excel_style(row_idx + 1, col_idx + 1), rec[header])
+            for col_idx, header in enumerate(columns_to_write):
+                worksheet.update_acell(Toggl2GSuiteTest.excel_style(row_idx + 2, col_idx + 1), rec[header])
 
 if __name__ == '__main__':
     unittest.main()
