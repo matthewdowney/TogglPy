@@ -4,9 +4,17 @@
 #--------------------------------------------------------------
 from datetime import datetime
 # for making requests
-import urllib2
-import urllib
+# backward compatibility with python2
+import sys
+if sys.version[0] == "2":
+    from urllib import urlencode
+    from urllib2 import urlopen, Request
+else:
+    from urllib.parse import urlencode
+    from urllib.request import urlopen, Request
 
+
+from base64 import b64encode
 # parsing json data
 import json
 #
@@ -56,7 +64,7 @@ class Toggl():
         '''set the API key in the request header'''
         # craft the Authorization
         authHeader = APIKey + ":" + "api_token"
-        authHeader = "Basic " + authHeader.encode("base64").rstrip()
+        authHeader = "Basic " + b64encode(authHeader.encode()).decode('ascii').rstrip()
 
         # add it into the header
         self.headers['Authorization'] = authHeader
@@ -79,24 +87,24 @@ class Toggl():
     def requestRaw(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read()
+            return urlopen(Request(endpoint, headers=self.headers)).read()
         else:
             if 'user_agent' not in parameters:
                 parameters.update( {'user_agent' : self.user_agent,} ) # add our class-level user agent in there
-            endpoint = endpoint + "?" + urllib.urlencode(parameters) # encode all of our data for a get request & modify the URL
-            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read() # make request and read the response
+            endpoint = endpoint + "?" + urlencode(parameters) # encode all of our data for a get request & modify the URL
+            return urlopen(Request(endpoint, headers=self.headers)).read() # make request and read the response
 
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
-        return json.loads(self.requestRaw(endpoint, parameters))
+        return json.loads(self.requestRaw(endpoint, parameters).decode('utf-8'))
 
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers)).read()
+            return urlopen(Request(endpoint, headers=self.headers)).read()
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urllib2.urlopen(urllib2.Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
+            return urlopen(Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
 
     #----------------------------------
     # Methods for managing Time Entries
@@ -178,7 +186,7 @@ class Toggl():
         
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
-            print "Error in getWorkspace(), please enter either a name or an id as a filter"
+            print("Error in getWorkspace(), please enter either a name or an id as a filter")
             return None
 
         if id == None: # then we search by name
@@ -205,7 +213,7 @@ class Toggl():
         
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
-            print "Error in getClient(), please enter either a name or an id as a filter"
+            print("Error in getClient(), please enter either a name or an id as a filter")
             return None
 
         if id == None: # then we search by name
