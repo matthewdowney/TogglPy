@@ -1,7 +1,7 @@
-#TogglPy
+# TogglPy
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
-#Features
+# Features
 * Make requests against any (Toggl) API endpoint with request data as a dictionary
 * Generate and save PDFs of summary, weekly, or detailed reports
 * Fetch reports as JSON
@@ -10,7 +10,7 @@ TogglPy is a python library for interacting with the [Toggl API](https://github.
 * Query projects, by client, or by a single name
 * Add custom time entries
 
-#Setup
+# Setup
 + Download the project, or download **TogglPy.py** for local usage
 + Import the content: 
 ```python
@@ -30,8 +30,8 @@ toggl.setAPIKey('<API-TOKEN>')
 ```
 
 
-#I learn best by examples:
-###Manual GET requests against any Toggl endpoint:
+# I learn best by examples:
+### Manual GET requests against any Toggl endpoint:
 ```python
 from TogglPy import Toggl
 
@@ -56,7 +56,7 @@ data = {
 response = toggl.request("https://www.toggl.com/api/v8/some/endpoint", parameters=data)
 ```
 
-###Making a POST request to any Toggl endpoint:
+### Making a POST request to any Toggl endpoint:
 ```python
 
 data = { 
@@ -75,7 +75,7 @@ response = toggl.postRequest("https://www.toggl.com/api/v8/projects", parameters
 ```
 
 
-###Generating PDF reports:
+### Generating PDF reports:
 ```python
 # specify that we want reports from this week
 data = {
@@ -90,7 +90,7 @@ toggl.getDetailedReportPDF(data, "detailed-report.pdf")
 toggl.getSummaryReportPDF(data, "summary-report.pdf")
 ```
 
-###Finding workspaces and clients
+### Finding workspaces and clients
 This will print some raw data that will give you all the info you need to identify clients and workspaces quickly:
 ```python
 print toggl.getWorkspaces()
@@ -147,7 +147,7 @@ for day in (29, 30, 31):
 	
 ### Automate daily records
 ```python
-#toggle_entry.py
+# toggle_entry.py
 import datetime
 if datetime.datetime.today().weekday() not in (4, 5):
 	toggl.createTimeEntry(hourduration=9, projectname='someproject', hour=10)
