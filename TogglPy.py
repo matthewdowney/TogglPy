@@ -132,13 +132,15 @@ class Toggl():
         response = self.postRequest(Endpoints.STOP_TIME(entryid))
         return self.decodeJSON(response)
 
-    def createTimeEntry(self, hourduration, projectid=None, projectname=None,
-                        clientname=None, year=None, month=None, day=None, hour=None):
+    def createTimeEntry(self, hourduration, description=None, projectid=None, projectname=None,
+                        taskid=None, clientname=None, year=None, month=None, day=None, hour=None):
         """
         Creating a custom time entry, minimum must is hour duration and project param
         :param hourduration:
+        :param description: Sets a descripton for the newly created time entry
         :param projectid: Not required if projectname given
         :param projectname: Not required if projectid was given
+        :param taskid: Adds a task to the time entry (Requirement: Toggl Starter or higher)
         :param clientname: Can speed up project query process
         :param year: Taken from now() if not provided
         :param month: Taken from now() if not provided
@@ -158,6 +160,13 @@ class Toggl():
             else:
                 print 'Too many missing parameters for query'
                 exit(1)
+
+        if description:
+            data['time_entry']['description'] = description
+
+        if taskid:
+            data['time_entry']['tid'] = taskid
+
 
         year = datetime.now().year if not year else year
         month = datetime.now().month if not month else month
