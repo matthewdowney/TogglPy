@@ -165,6 +165,17 @@ class Toggl():
         response = self.postRequest(Endpoints.TIME_ENTRIES, parameters=data)
         return self.decodeJSON(response)
 
+    def putTimeEntry(self, parameters):
+        if not 'id' in parameters:
+            raise Exception("An id must be provided in order to put a time entry")
+        id = parameters['id']
+        endpoint = Endpoints.TIME_ENTRIES  + "/" + str(id) # encode all of our data for a get request & modify the URL
+        data = json.JSONEncoder().encode({'time_entry': parameters})
+        request = urllib2.Request(endpoint, data=data, headers=self.headers)
+        request.get_method = lambda:"PUT"
+
+        return json.loads(urllib2.urlopen(request).read())
+
     #-----------------------------------
     # Methods for getting workspace data
     #-----------------------------------
