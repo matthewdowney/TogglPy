@@ -2,9 +2,21 @@ import os
 import unittest
 from TogglPy import Toggl
 
-#these tests assume that you have two environment variables defined
-#TOGGL_API_KEY
-#WORKPSPACE_ID
+# these tests assume three  things:
+#
+# first, that you have two environment variables defined
+# TOGGL_API_KEY
+# WORKPSPACE_ID
+#
+# second, that you are able to able to reach Toggl's live REST API.
+#
+# finally, the test_putTimeEntry() will likely fail unless you have 1) a Client "Self" and 2) Project "Self" defined.
+# and 3) some Pomodoros completed in your time entries.
+# this is because these are acceptance tests that are hitting my personal Toggl repo, where I do all three
+# of the above defined
+#
+
+
 
 
 class TogglPyTests(unittest.TestCase):
@@ -25,6 +37,28 @@ class TogglPyTests(unittest.TestCase):
         response = self.toggl.request("https://www.toggl.com/api/v8/clients")
         self.assertTrue(response is not None)
 
+    def test_putTimeEntry(self):
+        request_args = {
+            'workspace_id': self.workspace_id,
+        }
+        entries = self.toggl.getDetailedReport(request_args)
+        #for this tests I'm tagging my Pomodoro Entries
+        missing_projects = [r for r in entries['data'] if r['project'] is None and 'Pomodoro' in r['description'] ]
+        me = missing_projects[0]
+        me_id = me['id'] #remember for later
+
+        #I've tagged my pomodoro entries as Self/Self
+        cp = self.toggl.getClientProject("Self", "Self")
+        project_id = cp['data']['id']
+        me['pid'] = project_id
+
+        #his is the new stuff
+        response = self.toggl.putTimeEntry({"id": me_id, "pid":project_id})
+        self.assertTrue(response is not None)
+        self.assertTrue('data' in response)
+        self.assertTrue(response['data']['pid'] == project_id)
+
+
     def test_getDetailedReportCSV(self):
         data = {
             'workspace_id': self.workspace_id,
@@ -44,7 +78,6 @@ class TogglPyTests(unittest.TestCase):
         }
         d = self.toggl.getDetailedReport(data)
         self.assertTrue(d is not None)
-        print(d)
         self.assertTrue(len(d.keys()) > 0 )
         fields = ['total_count', 'total_currencies', 'total_billable', 'data']
         for f in fields:
