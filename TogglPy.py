@@ -6,12 +6,19 @@ from datetime import datetime
 # for making requests
 # backward compatibility with python2
 import sys
+
+cafile = None
 if sys.version[0] == "2":
     from urllib import urlencode
     from urllib2 import urlopen, Request
 else:
     from urllib.parse import urlencode
     from urllib.request import urlopen, Request
+    try:
+        import certifi
+        cafile = certifi.where()
+    except ImportError:
+        pass
 
 
 from base64 import b64encode
@@ -34,6 +41,8 @@ class Endpoints():
     def STOP_TIME(pid):
         return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
     CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
+
+
 
 #-------------------------------------------------------
 # Class containing the necessities for Toggl interaction
@@ -87,12 +96,12 @@ class Toggl():
     def requestRaw(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urlopen(Request(endpoint, headers=self.headers)).read()
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
         else:
             if 'user_agent' not in parameters:
                 parameters.update( {'user_agent' : self.user_agent,} ) # add our class-level user agent in there
             endpoint = endpoint + "?" + urlencode(parameters) # encode all of our data for a get request & modify the URL
-            return urlopen(Request(endpoint, headers=self.headers)).read() # make request and read the response
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read() # make request and read the response
 
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
@@ -101,10 +110,10 @@ class Toggl():
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urlopen(Request(endpoint, headers=self.headers)).read()
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urlopen(Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
+            return urlopen(Request(endpoint, data=data, headers=self.headers), cafile=cafile).read() # make request and read the response
 
     #----------------------------------
     # Methods for managing Time Entries
@@ -158,7 +167,7 @@ class Toggl():
             elif projectname:
                 projectid = (self.searchClientProject(projectname))['data']['id']
             else:
-                print 'Too many missing parameters for query'
+                print('Too many missing parameters for query')
                 exit(1)
 
         if description:
@@ -272,7 +281,7 @@ class Toggl():
             except:
                 continue
 
-        print 'Could not find client by the name'
+        print('Could not find client by the name')
         return None
 
     def getClientProject(self, clientName, projectName):
@@ -287,7 +296,7 @@ class Toggl():
                 cid = client['id']
 
         if not cid:
-            print 'Could not find such client name'
+            print('Could not find such client name')
             return None
 
         for projct in self.getClientProjects(cid):
@@ -295,7 +304,7 @@ class Toggl():
                 pid = projct['id']
 
         if not pid:
-            print 'Could not find such project name'
+            print('Could not find such project name')
             return None
 
         return self.getProject(pid)
