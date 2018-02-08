@@ -32,6 +32,7 @@ class Endpoints():
     WORKSPACES = "https://www.toggl.com/api/v8/workspaces"
     CLIENTS = "https://www.toggl.com/api/v8/clients"
     PROJECTS = "https://www.toggl.com/api/v8/projects"
+    TASKS = "https://www.toggl.com/api/v8/tasks"
     REPORT_WEEKLY = "https://toggl.com/reports/api/v2/weekly"
     REPORT_DETAILED = "https://toggl.com/reports/api/v2/details"
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
