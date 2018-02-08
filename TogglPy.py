@@ -317,6 +317,14 @@ class Toggl():
         '''return all projects that are visable to a user'''
         return self.request(Endpoints.PROJECTS + '/{0}'.format(pid))
 
+    def getProjectTasks(self, pid, archived=False):
+        """
+        return all tasks of a given project
+        :param pid: Project ID
+        :param archived: choose wether to fetch archived tasks or not
+        """
+        return self.request(Endpoints.PROJECTS + '/{0}'.format(pid) + '/tasks')
+
     #---------------------------------
     # Methods for getting reports data
     #---------------------------------
