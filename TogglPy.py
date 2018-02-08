@@ -32,6 +32,7 @@ class Endpoints():
     WORKSPACES = "https://www.toggl.com/api/v8/workspaces"
     CLIENTS = "https://www.toggl.com/api/v8/clients"
     PROJECTS = "https://www.toggl.com/api/v8/projects"
+    TASKS = "https://www.toggl.com/api/v8/tasks"
     REPORT_WEEKLY = "https://toggl.com/reports/api/v2/weekly"
     REPORT_DETAILED = "https://toggl.com/reports/api/v2/details"
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
@@ -214,7 +215,7 @@ class Toggl():
     def getWorkspace(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
         workspaces = self.getWorkspaces() # get all workspaces
-        
+
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
             print("Error in getWorkspace(), please enter either a name or an id as a filter")
@@ -230,7 +231,7 @@ class Toggl():
                 if workspace['id'] == int(id):
                     return workspace # if we find it return it
             return None # if we get to here and haven't found it return None
-    
+
     #--------------------------------
     # Methods for getting client data
     #--------------------------------
@@ -241,7 +242,7 @@ class Toggl():
     def getClient(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
         clients = self.getClients() # get all clients
-        
+
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
             print("Error in getClient(), please enter either a name or an id as a filter")
@@ -316,6 +317,14 @@ class Toggl():
         '''return all projects that are visable to a user'''
         return self.request(Endpoints.PROJECTS + '/{0}'.format(pid))
 
+    def getProjectTasks(self, pid, archived=False):
+        """
+        return all tasks of a given project
+        :param pid: Project ID
+        :param archived: choose wether to fetch archived tasks or not
+        """
+        return self.request(Endpoints.PROJECTS + '/{0}'.format(pid) + '/tasks')
+
     #---------------------------------
     # Methods for getting reports data
     #---------------------------------
@@ -369,4 +378,3 @@ class Toggl():
         # write the data to a file
         with open(filename, "wb") as pdf:
             pdf.write(filedata)
-
