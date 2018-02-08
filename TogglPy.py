@@ -214,7 +214,7 @@ class Toggl():
     def getWorkspace(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
         workspaces = self.getWorkspaces() # get all workspaces
-        
+
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
             print("Error in getWorkspace(), please enter either a name or an id as a filter")
@@ -230,7 +230,7 @@ class Toggl():
                 if workspace['id'] == int(id):
                     return workspace # if we find it return it
             return None # if we get to here and haven't found it return None
-    
+
     #--------------------------------
     # Methods for getting client data
     #--------------------------------
@@ -241,7 +241,7 @@ class Toggl():
     def getClient(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
         clients = self.getClients() # get all clients
-        
+
         # if they give us nothing let them know we're not returning anything
         if name == None and id == None:
             print("Error in getClient(), please enter either a name or an id as a filter")
@@ -369,4 +369,3 @@ class Toggl():
         # write the data to a file
         with open(filename, "wb") as pdf:
             pdf.write(filedata)
-
