@@ -81,7 +81,7 @@ class Toggl():
 
     def setAuthCredentials(self, email, password):
         authHeader = '{0}:{1}'.format(email, password)
-        authHeader = "Basic " + authHeader.encode("base64").rstrip()
+        authHeader = "Basic " + b64encode(authHeader.encode()).decode('ascii').rstrip()
 
         # add it into the header
         self.headers['Authorization'] = authHeader
