@@ -111,10 +111,10 @@ class Toggl():
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urlopen(Request(endpoint, data=data, headers=self.headers), cafile=cafile).read() # make request and read the response
+            return urlopen(Request(endpoint, data=data, headers=self.headers), cafile=cafile).read().decode('utf-8) # make request and read the response
 
     #----------------------------------
     # Methods for managing Time Entries
