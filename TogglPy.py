@@ -114,7 +114,8 @@ class Toggl():
             return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urlopen(Request(endpoint, data=data, headers=self.headers), cafile=cafile).read().decode('utf-8') # make request and read the response
+            binary_data = data.encode('utf-8')
+            return urlopen(Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile).read().decode('utf-8') # make request and read the response
 
     #----------------------------------
     # Methods for managing Time Entries
