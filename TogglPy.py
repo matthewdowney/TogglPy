@@ -121,15 +121,21 @@ class Toggl():
     # Methods for managing Time Entries
     #----------------------------------
 
-    def startTimeEntry(self, description, pid):
+    def startTimeEntry(self, description, pid=None, tid=None):
         '''starts a new Time Entry'''
+
         data = {
             "time_entry": {
-            "description": description,
-            "pid": pid,
-            "created_with": self.user_agent
-            }
-        }
+                "created_with": self.user_agent,
+                "description": description
+                }
+                    }
+        if pid:
+            data["time_entry"]["pid"] = pid
+
+        if tid:
+            data["time_entry"]["tid"] = tid
+
         response = self.postRequest(Endpoints.START_TIME, parameters=data)
         return self.decodeJSON(response)
 
