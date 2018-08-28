@@ -1,8 +1,9 @@
 import os
 import unittest
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from TogglPy import Toggl
+from toggl.TogglPy import Toggl
 
 #this test demonstrates how to link up the toggl API into a google sheet
 #in order to do this, you'll need to first setup your google account developer environment

@@ -6,7 +6,7 @@ NAME
     TogglPy
 
 FILE
-    TogglPy.py
+    toggl/TogglPy.py
 
 DESCRIPTION
     #--------------------------------------------------------------
