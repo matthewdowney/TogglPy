@@ -2,33 +2,40 @@ import codecs
 import os
 import re
 
-from setuptools import find_packages, setup
+import setuptools
 
 here = os.path.abspath(os.path.dirname(__file__))
+
 
 def read(*parts):
     return codecs.open(os.path.join(here, *parts), 'r').read()
 
+
 def find_version(*file_paths):
     version_file = read(*file_paths)
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
+    version_match = re.search(
+        r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M
+    )
     if version_match:
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
+
 long_description = read('README.md')
 
-setup(
+
+setuptools.setup(
     name='TogglPy',
     version=find_version('toggl', '__init__.py'),
     description='Python library for interacting with the Toggl API.',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/matthewdowney/TogglPy',
     author="Matthew Downey",
     author_email='matthewdowney20@gmail.com',
     license='MIT License',
     zip_safe=False,
-    packages=['toggl'],
+    packages=setuptools.find_packages(),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
