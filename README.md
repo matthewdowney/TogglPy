@@ -1,4 +1,7 @@
 # TogglPy
+
+[![Latest PyPI version](https://img.shields.io/pypi/v/TogglPy.svg)](https://pypi.org/project/TogglPy/)
+
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
 # Features
@@ -13,7 +16,7 @@ TogglPy is a python library for interacting with the [Toggl API](https://github.
 # Setup
 + Install the project with pip:
 ```shell
-pip install -U https://github.com/matthewdowney/TogglPy/archive/master.zip
+pip install -U TogglPy
 ```
 + Import the content: 
 ```python
