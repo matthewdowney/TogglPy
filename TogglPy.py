@@ -342,7 +342,7 @@ class Toggl():
         data['task']['name'] = name
         data['task']['pid'] = pid
         data['task']['active'] = active 
-        data['task']['estimatedSeconds'] = estimatedSeconds
+        data['task']['estimated_seconds'] = estimatedSeconds
 
 
         response = self.request(Endpoints.TASKS, parameters=data)
