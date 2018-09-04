@@ -332,6 +332,29 @@ class Toggl():
         """
         return self.request(Endpoints.PROJECTS + '/{0}'.format(pid) + '/tasks')
 
+    # --------------------------------
+    # Methods for interacting with TASKS data
+    # --------------------------------
+
+    def createTask(self, name, pid, active=True, estimatedSeconds=False):
+        """
+        create a new task (Requirement: Toggl Starter or higher)
+        :param name: Name of the task
+        :param pid: Project ID
+        :param active: Defines if the task is active or archived, default: active
+        :param estimatedSeconds: Estimation for the task in seconds
+        """
+
+        data = {}
+        data['task']['name'] = name
+        data['task']['pid'] = pid
+        data['task']['active'] = active 
+        data['task']['estimated_seconds'] = estimatedSeconds
+
+
+        response = self.request(Endpoints.TASKS, parameters=data)
+        return self.decodeJSON(response)
+
     #---------------------------------
     # Methods for getting reports data
     #---------------------------------
