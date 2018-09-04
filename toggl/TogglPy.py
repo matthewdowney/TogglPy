@@ -81,7 +81,7 @@ class Toggl():
 
     def setAuthCredentials(self, email, password):
         authHeader = '{0}:{1}'.format(email, password)
-        authHeader = "Basic " + authHeader.encode("base64").rstrip()
+        authHeader = "Basic " + b64encode(authHeader.encode()).decode('ascii').rstrip()
 
         # add it into the header
         self.headers['Authorization'] = authHeader
@@ -111,24 +111,31 @@ class Toggl():
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters == None:
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urlopen(Request(endpoint, data=data, headers=self.headers), cafile=cafile).read() # make request and read the response
+            binary_data = data.encode('utf-8')
+            return urlopen(Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile).read().decode('utf-8') # make request and read the response
 
     #----------------------------------
     # Methods for managing Time Entries
     #----------------------------------
 
-    def startTimeEntry(self, description, pid):
+    def startTimeEntry(self, description, pid=None, tid=None):
         '''starts a new Time Entry'''
+
         data = {
             "time_entry": {
-            "description": description,
-            "pid": pid,
-            "created_with": self.user_agent
-            }
-        }
+                "created_with": self.user_agent,
+                "description": description
+                }
+                    }
+        if pid:
+            data["time_entry"]["pid"] = pid
+
+        if tid:
+            data["time_entry"]["tid"] = tid
+
         response = self.postRequest(Endpoints.START_TIME, parameters=data)
         return self.decodeJSON(response)
 
