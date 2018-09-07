@@ -1,12 +1,14 @@
-#--------------------------------------------------------------
-# TogglPy is a non-cluttered, easily understood and implemented
-# library for interacting with the Toggl API.
-#--------------------------------------------------------------
+"""
+TogglPy is a non-cluttered, easily understood and implemented
+library for interacting with the Toggl API.
+"""
+import json  # parsing json data
+import sys
+from base64 import b64encode
 from datetime import datetime
+
 # for making requests
 # backward compatibility with python2
-import sys
-
 cafile = None
 if sys.version[0] == "2":
     from urllib import urlencode
@@ -21,13 +23,9 @@ else:
         pass
 
 
-from base64 import b64encode
-# parsing json data
-import json
-#
-#---------------------------------------------
+# --------------------------------------------
 # Class containing the endpoint URLs for Toggl
-#---------------------------------------------
+# --------------------------------------------
 class Endpoints():
     WORKSPACES = "https://www.toggl.com/api/v8/workspaces"
     CLIENTS = "https://www.toggl.com/api/v8/clients"
@@ -38,16 +36,16 @@ class Endpoints():
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
     START_TIME = "https://www.toggl.com/api/v8/time_entries/start"
     TIME_ENTRIES = "https://www.toggl.com/api/v8/time_entries"
+    CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
+
     @staticmethod
     def STOP_TIME(pid):
         return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
-    CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
 
 
-
-#-------------------------------------------------------
+# ------------------------------------------------------
 # Class containing the necessities for Toggl interaction
-#-------------------------------------------------------
+# ------------------------------------------------------
 class Toggl():
     # template of headers for our request
     headers = {
@@ -60,16 +58,16 @@ class Toggl():
     # default API user agent value
     user_agent = "TogglPy"
 
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
     # Auxiliary methods
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
 
     def decodeJSON(self, jsonString):
         return json.JSONDecoder().decode(jsonString)
 
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
     # Methods that modify the headers to control our HTTP requests
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
     def setAPIKey(self, APIKey):
         '''set the API key in the request header'''
         # craft the Authorization
@@ -90,19 +88,21 @@ class Toggl():
         '''set the User-Agent setting, by default it's set to TogglPy'''
         self.user_agent = agent
 
-    #------------------------------------------------------
+    # -----------------------------------------------------
     # Methods for directly requesting data from an endpoint
-    #------------------------------------------------------
+    # -----------------------------------------------------
 
     def requestRaw(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
-        if parameters == None:
+        if parameters is None:
             return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
         else:
             if 'user_agent' not in parameters:
-                parameters.update( {'user_agent' : self.user_agent,} ) # add our class-level user agent in there
-            endpoint = endpoint + "?" + urlencode(parameters) # encode all of our data for a get request & modify the URL
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read() # make request and read the response
+                parameters.update({'user_agent': self.user_agent})  # add our class-level user agent in there
+            # encode all of our data for a get request & modify the URL
+            endpoint = endpoint + "?" + urlencode(parameters)
+            # make request and read the response
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
 
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
@@ -110,16 +110,19 @@ class Toggl():
 
     def postRequest(self, endpoint, parameters=None):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
-        if parameters == None:
+        if parameters is None:
             return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
             binary_data = data.encode('utf-8')
-            return urlopen(Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile).read().decode('utf-8') # make request and read the response
+            # make request and read the response
+            return urlopen(
+                Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile
+            ).read().decode('utf-8')
 
-    #----------------------------------
+    # ---------------------------------
     # Methods for managing Time Entries
-    #----------------------------------
+    # ---------------------------------
 
     def startTimeEntry(self, description, pid=None, tid=None):
         '''starts a new Time Entry'''
@@ -184,7 +187,6 @@ class Toggl():
         if taskid:
             data['time_entry']['tid'] = taskid
 
-
         year = datetime.now().year if not year else year
         month = datetime.now().month if not month else month
         day = datetime.now().day if not day else day
@@ -200,71 +202,71 @@ class Toggl():
         return self.decodeJSON(response)
 
     def putTimeEntry(self, parameters):
-        if not 'id' in parameters:
+        if 'id' not in parameters:
             raise Exception("An id must be provided in order to put a time entry")
         id = parameters['id']
         if type(id) is not int:
-            raise Exception("Invalid id %s provided " % ( id ) )
-        endpoint = Endpoints.TIME_ENTRIES  + "/" + str(id) # encode all of our data for a put request & modify the URL
+            raise Exception("Invalid id %s provided " % (id))
+        endpoint = Endpoints.TIME_ENTRIES + "/" + str(id)  # encode all of our data for a put request & modify the URL
         data = json.JSONEncoder().encode({'time_entry': parameters})
-        request = urllib2.Request(endpoint, data=data, headers=self.headers)
-        request.get_method = lambda:"PUT"
+        request = Request(endpoint, data=data, headers=self.headers)
+        request.get_method = lambda: "PUT"
 
-        return json.loads(urllib2.urlopen(request).read())
+        return json.loads(urlopen(request).read())
 
-    #-----------------------------------
+    # ----------------------------------
     # Methods for getting workspace data
-    #-----------------------------------
+    # ----------------------------------
     def getWorkspaces(self):
         '''return all the workspaces for a user'''
         return self.request(Endpoints.WORKSPACES)
 
     def getWorkspace(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
-        workspaces = self.getWorkspaces() # get all workspaces
+        workspaces = self.getWorkspaces()  # get all workspaces
 
         # if they give us nothing let them know we're not returning anything
-        if name == None and id == None:
+        if name is None and id is None:
             print("Error in getWorkspace(), please enter either a name or an id as a filter")
             return None
 
-        if id == None: # then we search by name
-            for workspace in workspaces: # search through them for one matching the name provided
+        if id is None:  # then we search by name
+            for workspace in workspaces:  # search through them for one matching the name provided
                 if workspace['name'] == name:
-                    return workspace # if we find it return it
-            return None # if we get to here and haven't found it return None
-        else: # otherwise search by id
-            for workspace in workspaces: # search through them for one matching the id provided
+                    return workspace  # if we find it return it
+            return None  # if we get to here and haven't found it return None
+        else:  # otherwise search by id
+            for workspace in workspaces:  # search through them for one matching the id provided
                 if workspace['id'] == int(id):
-                    return workspace # if we find it return it
-            return None # if we get to here and haven't found it return None
+                    return workspace  # if we find it return it
+            return None  # if we get to here and haven't found it return None
 
-    #--------------------------------
+    # -------------------------------
     # Methods for getting client data
-    #--------------------------------
+    # -------------------------------
     def getClients(self):
         '''return all clients that are visable to a user'''
         return self.request(Endpoints.CLIENTS)
 
     def getClient(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
-        clients = self.getClients() # get all clients
+        clients = self.getClients()  # get all clients
 
         # if they give us nothing let them know we're not returning anything
-        if name == None and id == None:
+        if name is None and id is None:
             print("Error in getClient(), please enter either a name or an id as a filter")
             return None
 
-        if id == None: # then we search by name
-            for client in clients: # search through them for one matching the name provided
+        if id is None:  # then we search by name
+            for client in clients:  # search through them for one matching the name provided
                 if client['name'] == name:
-                    return client # if we find it return it
-            return None # if we get to here and haven't found it return None
-        else: # otherwise search by id
-            for client in clients: # search through them for one matching the id provided
+                    return client  # if we find it return it
+            return None  # if we get to here and haven't found it return None
+        else:  # otherwise search by id
+            for client in clients:  # search through them for one matching the id provided
                 if client['id'] == int(id):
-                    return client # if we find it return it
-            return None # if we get to here and haven't found it return None
+                    return client  # if we find it return it
+            return None  # if we get to here and haven't found it return None
 
     def getClientProjects(self, id):
         """
@@ -286,7 +288,7 @@ class Toggl():
                 for project in self.getClientProjects(client['id']):
                     if project['name'] == name:
                         return project
-            except:
+            except Exception:
                 continue
 
         print('Could not find client by the name')
@@ -348,16 +350,15 @@ class Toggl():
         data = {}
         data['task']['name'] = name
         data['task']['pid'] = pid
-        data['task']['active'] = active 
+        data['task']['active'] = active
         data['task']['estimated_seconds'] = estimatedSeconds
-
 
         response = self.request(Endpoints.TASKS, parameters=data)
         return self.decodeJSON(response)
 
-    #---------------------------------
+    # --------------------------------
     # Methods for getting reports data
-    #---------------------------------
+    # ---------------------------------
     def getWeeklyReport(self, data):
         '''return a weekly report for a user'''
         return self.request(Endpoints.REPORT_WEEKLY, parameters=data)
