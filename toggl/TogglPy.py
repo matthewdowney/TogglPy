@@ -3,7 +3,9 @@ TogglPy is a non-cluttered, easily understood and implemented
 library for interacting with the Toggl API.
 """
 import json  # parsing json data
+import math
 import sys
+import time
 from base64 import b64encode
 from datetime import datetime
 
@@ -376,6 +378,21 @@ class Toggl():
         '''return a detailed report for a user'''
         return self.request(Endpoints.REPORT_DETAILED, parameters=data)
 
+    def getDetailedReportPages(self, data):
+        '''return detailed report data from all pages for a user'''
+        pages_index = 1
+        data['page'] = pages_index
+        pages = self.request(Endpoints.REPORT_DETAILED, parameters=data)
+        try:
+            pages_number = math.ceil(pages.get('total_count', 0) / pages.get('per_page', 0))
+        except ZeroDivisionError:
+            pages_number = 0
+        for pages_index in range(2, pages_number+1):
+            time.sleep(1)  # There is rate limiting of 1 request per second (per IP per API token).
+            data['page'] = pages_index
+            pages['data'].extend(self.request(Endpoints.REPORT_DETAILED, parameters=data).get('data', []))
+        return pages
+
     def getDetailedReportPDF(self, data, filename):
         '''save a detailed report as a pdf'''
         # get the raw pdf file data
@@ -386,7 +403,7 @@ class Toggl():
             pdf.write(filedata)
 
     def getDetailedReportCSV(self, data, filename=None):
-        '''save a detailed report as a pdf'''
+        '''save a detailed report as a csv'''
         # get the raw pdf file data
         filedata = self.requestRaw(Endpoints.REPORT_DETAILED + ".csv", parameters=data)
 
