@@ -243,9 +243,19 @@ class Toggl():
                     return workspace  # if we find it return it
             return None  # if we get to here and haven't found it return None
 
+    def getWorkspaceProjects(self, id):
+        """
+        Return all of the projects for a given Workspace
+        :param id: Workspace ID by which to query
+        :return: Projects object returned from endpoint
+        """
+
+        return self.request(Endpoints.WORKSPACES + '/{0}'.format(id) + '/projects')
+
     # -------------------------------
     # Methods for getting client data
     # -------------------------------
+
     def getClients(self):
         '''return all clients that are visable to a user'''
         return self.request(Endpoints.CLIENTS)
