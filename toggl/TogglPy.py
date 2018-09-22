@@ -122,6 +122,15 @@ class Toggl():
                 Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile
             ).read().decode('utf-8')
 
+    def putRequest(self, endpoint, parameters):
+        '''Make a PUT request to teh toggl api at a certain enpoint and return the RAW page data (usually JSON)'''
+        data = json.JSONEncoder().encode(parameters)
+        binary_data = data.encode('utf-8')
+        # make request and read the response
+        return urlopen(
+            Request(endpoint, data=binary_data, headers=self.headers, method='PUT'), cafile=cafile
+        ).read().decode('utf-8')
+
     # ---------------------------------
     # Methods for managing Time Entries
     # ---------------------------------
@@ -456,4 +465,20 @@ class Toggl():
         data['client']['notes'] = notes
 
         response = self.postRequest(Endpoints.CLIENTS, parameters=data)
+        return self.decodeJSON(response)
+
+    def updateClient(self, id, name=None, notes=None):
+        """
+        Update data for an existing client. If the name or notes parameter is not supplied, the existing data on the Toggl server will not be changed.
+        :param id: The id of the client to update
+        :param name: Update the name of the client (optional)
+        :param notes: Update the notes for the client (optional)
+        """
+
+        data = {}
+        data['client'] = {}
+        data['client']['name'] = name
+        data['client']['notes'] = notes
+
+        response = self.putRequest(Endpoints.CLIENTS + '/{0}'.format(id), parameters=data)
         return self.decodeJSON(response)
