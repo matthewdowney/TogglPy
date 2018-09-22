@@ -437,3 +437,23 @@ class Toggl():
         # write the data to a file
         with open(filename, "wb") as pdf:
             pdf.write(filedata)
+
+    # --------------------------------
+    # Methods for creating and updating clients
+    # ---------------------------------
+    def createClient(self, name, wid, notes=None):
+        """
+        create a new client
+        :param name: Name the client
+        :param wid: Workspace ID
+        :param notes: Notes for the client (optional)
+        """
+
+        data = {}
+        data['client'] = {}
+        data['client']['name'] = name
+        data['client']['wid'] = wid
+        data['client']['notes'] = notes
+
+        response = self.postRequest(Endpoints.CLIENTS, parameters=data)
+        return self.decodeJSON(response)
