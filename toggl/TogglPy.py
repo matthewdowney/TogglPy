@@ -133,8 +133,8 @@ class Toggl():
             "time_entry": {
                 "created_with": self.user_agent,
                 "description": description
-                }
-                    }
+            }
+        }
         if pid:
             data["time_entry"]["pid"] = pid
 
@@ -194,9 +194,9 @@ class Toggl():
         day = datetime.now().day if not day else day
         hour = datetime.now().hour if not hour else hour
 
-        timestruct = datetime(year, month, day, hour-2).isoformat() + '.000Z'
+        timestruct = datetime(year, month, day, hour - 2).isoformat() + '.000Z'
         data['time_entry']['start'] = timestruct
-        data['time_entry']['duration'] = hourduration*3600
+        data['time_entry']['duration'] = hourduration * 3600
         data['time_entry']['pid'] = projectid
         data['time_entry']['created_with'] = 'NAME'
 
@@ -360,12 +360,13 @@ class Toggl():
         """
 
         data = {}
+        data['task'] = {}
         data['task']['name'] = name
         data['task']['pid'] = pid
         data['task']['active'] = active
         data['task']['estimated_seconds'] = estimatedSeconds
 
-        response = self.request(Endpoints.TASKS, parameters=data)
+        response = self.postRequest(Endpoints.TASKS, parameters=data)
         return self.decodeJSON(response)
 
     # --------------------------------
@@ -397,7 +398,7 @@ class Toggl():
             pages_number = math.ceil(pages.get('total_count', 0) / pages.get('per_page', 0))
         except ZeroDivisionError:
             pages_number = 0
-        for pages_index in range(2, pages_number+1):
+        for pages_index in range(2, pages_number + 1):
             time.sleep(1)  # There is rate limiting of 1 request per second (per IP per API token).
             data['page'] = pages_index
             pages['data'].extend(self.request(Endpoints.REPORT_DETAILED, parameters=data).get('data', []))
