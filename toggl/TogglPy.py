@@ -110,7 +110,7 @@ class Toggl():
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
         return json.loads(self.requestRaw(endpoint, parameters).decode('utf-8'))
 
-    def postRequest(self, endpoint, parameters=None):
+    def postRequest(self, endpoint, parameters=None, method='POST'):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
         if parameters is None:
             return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
@@ -119,17 +119,8 @@ class Toggl():
             binary_data = data.encode('utf-8')
             # make request and read the response
             return urlopen(
-                Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile
+                Request(endpoint, data=binary_data, headers=self.headers, method=method), cafile=cafile
             ).read().decode('utf-8')
-
-    def putRequest(self, endpoint, parameters):
-        '''Make a PUT request to teh toggl api at a certain enpoint and return the RAW page data (usually JSON)'''
-        data = json.JSONEncoder().encode(parameters)
-        binary_data = data.encode('utf-8')
-        # make request and read the response
-        return urlopen(
-            Request(endpoint, data=binary_data, headers=self.headers, method='PUT'), cafile=cafile
-        ).read().decode('utf-8')
 
     # ---------------------------------
     # Methods for managing Time Entries
@@ -480,5 +471,5 @@ class Toggl():
         data['client']['name'] = name
         data['client']['notes'] = notes
 
-        response = self.putRequest(Endpoints.CLIENTS + '/{0}'.format(id), parameters=data)
+        response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), parameters=data, method='PUT')
         return self.decodeJSON(response)
