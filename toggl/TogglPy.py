@@ -112,8 +112,10 @@ class Toggl():
 
     def postRequest(self, endpoint, parameters=None, method='POST'):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
+        if method == 'DELETE':  # Calls to the API using the DELETE mothod return a HTTP response rather than JSON
+            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).code
         if parameters is None:
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
+            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
             binary_data = data.encode('utf-8')
@@ -439,7 +441,7 @@ class Toggl():
             pdf.write(filedata)
 
     # --------------------------------
-    # Methods for creating and updating clients
+    # Methods for creating, updating, and deleting clients
     # ---------------------------------
     def createClient(self, name, wid, notes=None):
         """
@@ -473,3 +475,11 @@ class Toggl():
 
         response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), parameters=data, method='PUT')
         return self.decodeJSON(response)
+
+    def deleteClient(self, id):
+        """
+        Delete the specified client
+        :param id: The id of the client to delete
+        """
+        response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), method='DELETE')
+        return response
