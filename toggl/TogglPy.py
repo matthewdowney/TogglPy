@@ -110,16 +110,18 @@ class Toggl():
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
         return json.loads(self.requestRaw(endpoint, parameters).decode('utf-8'))
 
-    def postRequest(self, endpoint, parameters=None):
+    def postRequest(self, endpoint, parameters=None, method='POST'):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
+        if method == 'DELETE':  # Calls to the API using the DELETE mothod return a HTTP response rather than JSON
+            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).code
         if parameters is None:
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
+            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
             binary_data = data.encode('utf-8')
             # make request and read the response
             return urlopen(
-                Request(endpoint, data=binary_data, headers=self.headers), cafile=cafile
+                Request(endpoint, data=binary_data, headers=self.headers, method=method), cafile=cafile
             ).read().decode('utf-8')
 
     # ---------------------------------
@@ -437,3 +439,47 @@ class Toggl():
         # write the data to a file
         with open(filename, "wb") as pdf:
             pdf.write(filedata)
+
+    # --------------------------------
+    # Methods for creating, updating, and deleting clients
+    # ---------------------------------
+    def createClient(self, name, wid, notes=None):
+        """
+        create a new client
+        :param name: Name the client
+        :param wid: Workspace ID
+        :param notes: Notes for the client (optional)
+        """
+
+        data = {}
+        data['client'] = {}
+        data['client']['name'] = name
+        data['client']['wid'] = wid
+        data['client']['notes'] = notes
+
+        response = self.postRequest(Endpoints.CLIENTS, parameters=data)
+        return self.decodeJSON(response)
+
+    def updateClient(self, id, name=None, notes=None):
+        """
+        Update data for an existing client. If the name or notes parameter is not supplied, the existing data on the Toggl server will not be changed.
+        :param id: The id of the client to update
+        :param name: Update the name of the client (optional)
+        :param notes: Update the notes for the client (optional)
+        """
+
+        data = {}
+        data['client'] = {}
+        data['client']['name'] = name
+        data['client']['notes'] = notes
+
+        response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), parameters=data, method='PUT')
+        return self.decodeJSON(response)
+
+    def deleteClient(self, id):
+        """
+        Delete the specified client
+        :param id: The id of the client to delete
+        """
+        response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), method='DELETE')
+        return response
