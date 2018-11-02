@@ -282,12 +282,13 @@ class Toggl():
                     return client  # if we find it return it
             return None  # if we get to here and haven't found it return None
 
-    def getClientProjects(self, id):
+    def getClientProjects(self, id, active='true'):
         """
         :param id: Client ID by which to query
+        :param active: possible values true/false/both. By default true. If false, only archived projects are returned.
         :return: Projects object returned from endpoint
         """
-        return self.request(Endpoints.CLIENTS + '/{0}/projects'.format(id))
+        return self.request(Endpoints.CLIENTS + '/{0}/projects?active={1}'.format(id, active))
 
     def searchClientProject(self, name):
         """
