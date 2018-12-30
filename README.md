@@ -1,16 +1,16 @@
-#TogglPy
+# TogglPy
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
-#This fork:
+# This fork:
 Includes an example script, run.py, which you can either use as-is or as a starter for your own command line Toggl time reporting app.
-Make sure to set your API key, workspace ID and user agent at the top of the script before running it.
+Make sure to set your API key, workspace ID and user agent to the credentials.py file first.
 
 
-##Output format and example output:
+## Output format and example output:
 
-###Output format:
-N entries
-Total hours: X
+### Output format:
+N entries   
+Total hours: X   
 
 Client Name
 
@@ -18,7 +18,7 @@ Client Name
         dd/mm/yyyy hh:mmAM - hh:mmPM (HH:MM) Task
         Project Duration: HH:MM
 
-###Example output:
+### Example output:
 3 entries    
 Total hours: 2
 
@@ -37,46 +37,71 @@ John Doe
 
 
 ## Help:
-python run.py --help
-usage: run.py [-h] [--period PERIOD PERIOD] [--tagids [TAGIDS [TAGIDS ...]]]
-              [--nocolors] [--debug]
+Add your API key, workspace ID, and user agent string to the `credentials.py` file.   
+Then run `python run.py`.
 
-This program provides some basic command line Toggl reporting.
+python run.py --help   
+usage: run.py [-h] [--period PERIOD PERIOD] [--tags [TAG [TAG ...]]]   
+              [--nocolors] [--debug]   
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --period PERIOD PERIOD
-                        Time period to report on. Usage: --period startdate
-                        enddate [where startdate & enddate take the format
-                        yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this
-                        argument, to report on the current month)
-  --tagids [TAGIDS [TAGIDS ...]]
-                        Tag IDs to report on. Do not provide this argument to
-                        ignore tags.
-  --nocolors            Prints plain output, useful if piping to a file
-  --debug               Prints debugging info
+This program provides some basic command line Toggl reporting.   
 
-Based on Matthew Downey's TogglPy library
-(https://github.com/matthewdowney/TogglPy/). 
-This script: credit (C) Mikey Beck https://mikeybeck.com.
+optional arguments:   
+  -h, --help            show this help message and exit   
+  --period PERIOD PERIOD   
+                        Time period to report on. Usage: --period startdate   
+                        enddate [where startdate & enddate take the format   
+                        yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this   
+                        argument, to report on the current month)   
+  --tags [TAG [TAG ...]]   
+                        Tags to report on. Can be names or IDs.    
+                        Do not provide this argument to ignore tags.   
+  --nocolors            Prints plain output, useful if piping to a file   
+  --addtags TAG         Adds tag to all returned time entries   
+  --removetags TAG      Removes tag from all returned time entries   
+  --debug               Prints debugging info   
 
 
-## Example input and output:
-![example input](example-in.png)
+Based on Matthew Downey's TogglPy library   
+(https://github.com/matthewdowney/TogglPy/).    
+This script: credit (C) Mikey Beck https://mikeybeck.com.   
 
-## run.py TODO:
-Ability to add tags to time
+
+## Example input and output:   
+![example input](example-in.png)   
+
+## run.py TODO:   
+Better documentation   
 
 ## run.py DONE:
-Reporting on specific clients (with --clientids parameter)   
-Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).
+Ability to remove tags from time entries (with --removetags parameter).    
+Ability to add tags to time (with --addtags parameter).  Run without using this command first as a dry-run, then add this parameter to apply the tag to all returned time entries.     
+Reporting on specific clients (with --clients parameter)   
+Make distinction between billed & unbilled time and allow reporting on either (using tags achieves this).   
 
-## How to get client IDs for use with --clientids parameter:
+## How to get client IDs for use with --clients parameter:
+### (This is no longer necessary; you can now use client names instead of IDs.)
 Use the --getclientids parameter, e.g. ```python run.py --getclientids```   
 This will print all client names and IDs.
+This also adds the client names & IDs to the data.json file, enabling the use of client names (rather than just IDs) with the --clients parameter.   
 
 
-#Features
+## Create a tag and get its ID (this is the only way I know how to get a tag's ID at the moment):   
+``curl -v -u API_TOKEN:api_token \    
+    -H "Content-Type: application/json" \    
+    -d '{"tag":{"name":"NEW_TAG","wid":WORKPLACE_ID}}' \    
+    -X POST https://www.toggl.com/api/v8/tags``
+
+The tag names and IDs can be added the the data.json file.  Doing this enables the use of tag names as well as IDs with the --tags parameter.   
+
+
+##To get all entries without a tag:
+Set `data['tag_ids']` to 0  (i.e. use `--tags 0`)
+This can be useful for finding unbilled time.  Run `python run.py --tags 0 --addtags unbilled` to add an `unbilled` tag to all entries with no tags.
+
+
+
+# Features
 * Make requests against any (Toggl) API endpoint with request data as a dictionary
 * Generate and save PDFs of summary, weekly, or detailed reports
 * Fetch reports as JSON
@@ -85,7 +110,7 @@ This will print all client names and IDs.
 * Query projects, by client, or by a single name
 * Add custom time entries
 
-#Setup
+# Setup
 + Download the project, or download **TogglPy.py** for local usage
 + Import the content: 
 ```python
@@ -105,8 +130,8 @@ toggl.setAPIKey('<API-TOKEN>')
 ```
 
 
-#I learn best by examples:
-###Manual GET requests against any Toggl endpoint:
+# I learn best by examples:
+### Manual GET requests against any Toggl endpoint:
 ```python
 from TogglPy import Toggl
 
@@ -131,7 +156,7 @@ data = {
 response = toggl.request("https://www.toggl.com/api/v8/some/endpoint", parameters=data)
 ```
 
-###Making a POST request to any Toggl endpoint:
+### Making a POST request to any Toggl endpoint:
 ```python
 
 data = { 
@@ -150,7 +175,7 @@ response = toggl.postRequest("https://www.toggl.com/api/v8/projects", parameters
 ```
 
 
-###Generating PDF reports:
+### Generating PDF reports:
 ```python
 # specify that we want reports from this week
 data = {
@@ -165,7 +190,7 @@ toggl.getDetailedReportPDF(data, "detailed-report.pdf")
 toggl.getSummaryReportPDF(data, "summary-report.pdf")
 ```
 
-###Finding workspaces and clients
+### Finding workspaces and clients
 This will print some raw data that will give you all the info you need to identify clients and workspaces quickly:
 ```python
 print toggl.getWorkspaces()
@@ -231,3 +256,27 @@ if datetime.datetime.today().weekday() not in (4, 5):
 ```shell
 (crontab -l ; echo "0 22 * * * toggl_entry.py")| crontab -
 ```
+
+
+#### Changelog:
+09/06/2017:
+- Added ability to omit second date from --period parameter, to report from first date to today.
+- Added --format parameter to make my billing a bit easier.
+
+24/04/2017:
+- Bugfix, periods longer than 24 hours work now.
+- Bugfix, +12:00 timezone now required for API to work.
+
+10/02/2017: 
+- Replaced --tagids parameter with --tags.  --tags parameter takes tag names as well as IDs. (Requires user to fill out tag info in data.json file.)
+
+05/02/2017: 
+- Replaced --clientids parameter with --clients.  --clients parameter takes client names as well as IDs.   
+
+25/01/2017: 
+- Implemented --removetags parameter   
+- Added credentials file (No more committing my API key)   
+   
+24/01/2017:   
+- Added in PUT request functionality to Toggl class.
+- Implemented --addtags parameter

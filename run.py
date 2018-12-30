@@ -4,23 +4,24 @@ import datetime
 import sys
 import argparse
 
+import urllib2
+import json
+
+import credentials
+import os
+
+API_KEY      = credentials.data['API_KEY']
+WORKSPACE_ID = credentials.data['WORKSPACE_ID']
+USER_AGENT   = credentials.data['USER_AGENT']
+
 toggl = Toggl()
 
-toggl.setAPIKey('10768746f747204579627f3e37edc929') 
+toggl.setAPIKey(API_KEY)
 
-data = {
-    'workspace_id': 334400,
-    'user_agent': 'mike@mikeybeck.com',
-    'page': 1,
-    'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
-    'client_ids': ''
-}
 
 # Something like this next line would be ideal but it's not currently easy to access task IDs.
 # (The only way I currently know how is to create a new task using the API and get the ID from the return value.
 #  See readme for an example of how to do this.)
-#tags_to_report = 'billable' # If you have a tag for billable hours and wish to report on them, set it here.
-# Instead of the above line, tag IDs are taken as arguments.
 
 
 
@@ -63,14 +64,17 @@ def roundTime(dt=None, roundTo=60):
    return dt + datetime.timedelta(0,rounding-seconds,-dt.microsecond)
 
 def formatDuration(duration):
-    durHours = str(duration.seconds//3600)
-    durMins = str((duration.seconds//60)%60)
+
+    seconds = int(duration.total_seconds()) #total_seconds required to prevent periods longer than 24hrs breaking
+    durHours = str(seconds//3600)
+    durMins = str((seconds//60)%60)
+
     if int(durHours) < 10:
         durHours = "0"+durHours
     if int(durMins) < 10:
-        durMins = "0"+durMins 
+        durMins = "0"+durMins
     duration = durHours + ":" + durMins
-    return duration 
+    return duration
 
 def colorText(color, text):
     if text is None:
@@ -78,7 +82,7 @@ def colorText(color, text):
     if terminalColors:
         return color + text + bcolors.ENDC
     else:
-        return text       
+        return text
 
 def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
@@ -91,24 +95,56 @@ def main(argv):
     epilog="""Based on Matthew Downey's TogglPy library (https://github.com/matthewdowney/TogglPy/).
     This script: credit (C) Mikey Beck https://mikeybeck.com."""
     parser = argparse.ArgumentParser(description=desc,epilog=epilog)
-    parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month)",nargs=2,required=False)
-    parser.add_argument("--tagids",help="Tag IDs to report on.  Do not provide this argument to ignore tags.",nargs='*',required=False)
-    parser.add_argument("--clientids",help="Client IDs to report on.  Do not provide this argument to report on all clients.",nargs='*',required=False)
-    parser.add_argument("--getclientids",help="Prints client names and IDs only.  ",action="store_true",required=False)
+    parser.add_argument("--period",help="Time period to report on. Usage:  --period startdate enddate [where startdate & enddate take the format yyyy-mm-dd, e.g. 2017-05-23] (Or do not provide this argument, to report on the current month.  Omit second date to report from first date up to today.)",nargs='*',required=False)
+    parser.add_argument("--tags",help="Tags to report on.  Can be names or IDs.  Do not provide this argument to ignore tags.",nargs='*',required=False)
+    parser.add_argument("--clients",help="Clients to report on.  Can be names or IDs.  Do not provide this argument to report on all clients.",nargs='*',required=False)
     parser.add_argument("--nocolors",help="Prints plain output, useful if piping to a file",action="store_true",required=False)
-
+    parser.add_argument("--addtags",help="Adds tag to all returned time entries.",nargs='*',required=False)
+    parser.add_argument("--removetags",help="Removes tag from all returned time entries.",nargs='*',required=False)
+    parser.add_argument("--format",help="Formats output nicely for Mikey's billing purposes",action="store_true",required=False)
     parser.add_argument("--debug",help="Prints debugging info",action="store_true",required=False)
-   
+
+    #Helper commands:
+    parser.add_argument("--getclientids",help="Prints client names and IDs only.",action="store_true",required=False)
+
+    data = {
+        'workspace_id': WORKSPACE_ID,
+        'user_agent': USER_AGENT,
+        'page': 1,
+        'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
+        'client_ids': ''
+    }
+
 
     x=parser.parse_args()
 
+    # Print client names & IDs
     if x.getclientids:
+
+        filename = 'data.json'
+        with open(filename, 'r') as f:
+            jsondata = json.load(f)
+
         for client in toggl.getClients():
             print "Client name: %s\t\t ID: %s" % (client['name'], client['id'])
+            jsondata['clients'][client['name']] = client['id'] # Add client names & IDs to data.json file
+
+        os.remove(filename)
+        with open(filename, 'w') as f:
+            json.dump(jsondata, f, indent=4)
+
         exit()
 
-    
+    if x.addtags or x.removetags:
+        timeentryIDs = ""
 
+
+    '''
+curl -v -u API_TOKEN:api_token \
+    -H "Content-Type: application/json" \
+    -d '{"time_entry":{"tags":["testtaggy","billed"], "tag_action": "add"}}' \
+    -X PUT https://www.toggl.com/api/v8/time_entries/TIME_ENTRY_ID
+'''
 
     global terminalColors
 
@@ -116,23 +152,51 @@ def main(argv):
 
     if x.nocolors:
         terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
-        
+
 
     if x.period:
         data['since'] = x.period[0]
-        data['until'] = x.period[1]
+        try:
+            data['until'] = x.period[1]
+        except IndexError:
+            data['until'] = datetime.datetime.today().strftime('%Y-%m-%d') #Today
     else:
         data['since'] = datetime.date.today().replace(day=1) #First day of current month
         data['until'] = last_day_of_month(datetime.date.today()) #Last day of current month
         print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
 
-    if x.tagids:
-        for tagid in x.tagids:
-            data['tag_ids'] += tagid + "," # Trailing comma doesn't matter so this is ok
+    if x.tags:
+        filename = 'data.json'
+        with open(filename, 'r') as f:
+            jsondata = json.load(f)
 
-    if x.clientids:
-        for clientid in x.clientids:
-            data['client_ids'] += clientid + "," # Trailing comma doesn't matter so this is ok
+        for tag in x.tags:
+            # If digits, assume tag ID.  If chars, assume tag name and look up ID in data.json.
+            if tag.isdigit() == True:
+                # We have a tag ID
+                tagid = tag
+            else:
+                # We have tag name, get tag ID from data.json.
+                tagid = jsondata['tags'][tag]
+
+            data['tag_ids'] += str(tagid) + "," # Trailing comma doesn't matter so this is ok
+
+
+    if x.clients:
+        filename = 'data.json'
+        with open(filename, 'r') as f:
+            jsondata = json.load(f)
+
+        for client in x.clients:
+            # If digits, assume client ID.  If chars, assume client name and look up ID in data.json.
+            if client.isdigit() == True:
+                # We have a client ID
+                clientid = client
+            else:
+                # We have client name, get client ID from data.json.
+                clientid = jsondata['clients'][client]
+
+            data['client_ids'] += str(clientid) + "," # Trailing comma doesn't matter so this is ok
 
     if x.debug:
         print data
@@ -150,19 +214,14 @@ def main(argv):
     detailedData2 = dict(detailedData)
 
     while item_count > 0:
-        # This bit is required if there is more than one page
         for timeentry in detailedData['data']:
- #           if tags_to_report:
- #               if tags_to_report in timeentry['tags']:
- #                   print timeentry
- #                   print ""
- #                   detailedData2.update(timeentry)
- #           else:
- #               print timeentry
- #               print ""
- #               detailedData2.update(timeentry)
-            detailedData2.update(timeentry)
+            if x.debug:
+                   print timeentry
 
+            if x.addtags or x.removetags:
+                timeentryIDs += str(timeentry['id'])+","
+
+            detailedData2.update(timeentry)
 
             totalTime += timeentry['dur']
             num_items += 1
@@ -194,24 +253,73 @@ def main(argv):
             print colorText(bcolors.OKGREEN, timeentry['client'])
         if project != timeentry['project']:
             print ""
-            print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
-            #print "\t" + timeentry['project'] 
+            if x.format:
+                print colorText(bcolors.OKBLUE, timeentry['project'])
+            else:
+                print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
+            #print "\t" + timeentry['project']
 
-        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #13:00 is the timezone.  Might need to change this
+        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
         end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
-        duration = abs(end - start)
-        projDuration += duration
-        duration = formatDuration(duration)
+        prevDuration = datetime.timedelta(0)
+        if 'thisDuration' in locals():
+            prevDuration = thisDuration
+        thisDuration = abs(end - start)
+        projDuration += thisDuration
+        duration = formatDuration(thisDuration)
         #Format start & end datetimes
-        start = start.strftime('%d/%m/%Y %I:%M%p') 
+        start = start.strftime('%d/%m/%Y %I:%M%p')
         end = end.strftime('%I:%M%p')
 
-        print "\t" + start + " - " + end + " (" + duration + ") " + timeentry['description']
+        if x.format:
+            prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+            if 'date' in locals():
+                prevDate = date
+            date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+            if date - prevDate > datetime.timedelta(2):
+                print ""
+            if date - prevDate < datetime.timedelta(0.5) and date - prevDate != datetime.timedelta(0):
+                total = formatDuration(thisDuration + prevDuration)
+                thisDuration = thisDuration + prevDuration
+                print start + " - " + end + " (" + duration + ") Total: (" + total + ")"
+            else:
+                print start + " - " + end + " (" + duration + ") "
+        else:
+            print "\t" + start + " - " + end + " (" + duration + ") " + timeentry['description']
 
         client = timeentry['client']
         project = timeentry['project']
 
-    print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
+    if x.format:
+        print colorText(bcolors.HEADER, "Total: " + formatDuration(projDuration)) # Print duration of last project
+    else:
+        print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
+
+
+    #Apply tag to all returned time entries
+    if x.addtags:
+        tags = x.addtags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.addTags(timeentryIDs, tags)
+
+    #Remove tag from all returned time entries
+    if x.removetags:
+        tags = x.removetags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.removeTags(timeentryIDs, tags)
+
+
+
 
 
 

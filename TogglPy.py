@@ -98,6 +98,24 @@ class Toggl():
             data = json.JSONEncoder().encode(parameters)
             return urllib2.urlopen(urllib2.Request(endpoint, data=data, headers=self.headers)).read() # make request and read the response
 
+
+    def putRequest(self, endpoint, parameters=None):
+        '''make a PUT request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+
+        if parameters == None:
+            request = urllib2.urlopen(urllib2.Request(endpoint, headers=self.headers))
+            request.get_method = lambda: 'PUT'
+            url = opener.open(request)
+            return url.read()
+        else:
+            data = json.JSONEncoder().encode(parameters)
+            request = urllib2.Request(endpoint, data=data, headers=self.headers)
+            request.get_method = lambda: 'PUT'
+            url = opener.open(request)
+            return url.read() # make request and read the response
+
+
     #----------------------------------
     # Methods for managing Time Entries
     #----------------------------------
@@ -319,3 +337,36 @@ class Toggl():
         with open(filename, "wb") as pdf:
             pdf.write(filedata)
 
+
+
+
+
+    #--------------------------------
+    # Methods for dealing with time entries & tags
+    #--------------------------------
+    def addTags(self, time_IDs, tags):
+        '''adds tags to time_IDs'''
+        #e.g. {"time_entry":{"tags":["billed","productive"], "tag_action": "add"}}
+        data = {
+            "time_entry": {
+            "tags": tags,
+            "tag_action": "add"
+            }
+        }
+
+        response = self.putRequest(Endpoints.TIME_ENTRIES+ "/"+time_IDs, parameters=data)
+        return self.decodeJSON(response)
+
+
+    def removeTags(self, time_IDs, tags):
+        '''removes tags from time_IDs'''
+        #e.g. {"time_entry":{"tags":["billed","productive"], "tag_action": "remove"}}
+        data = {
+            "time_entry": {
+            "tags": tags,
+            "tag_action": "remove"
+            }
+        }
+
+        response = self.putRequest(Endpoints.TIME_ENTRIES+ "/"+time_IDs, parameters=data)
+        return self.decodeJSON(response)
