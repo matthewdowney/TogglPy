@@ -153,7 +153,6 @@ curl -v -u API_TOKEN:api_token \
     if x.nocolors:
         terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
 
-
     if x.period:
         data['since'] = x.period[0]
         try:
@@ -294,6 +293,33 @@ curl -v -u API_TOKEN:api_token \
         print colorText(bcolors.HEADER, "Total: " + formatDuration(projDuration)) # Print duration of last project
     else:
         print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
+
+
+    #Apply tag to all returned time entries
+    if x.addtags:
+        tags = x.addtags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.addTags(timeentryIDs, tags)
+
+    #Remove tag from all returned time entries
+    if x.removetags:
+        tags = x.removetags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.removeTags(timeentryIDs, tags)
+
+
+
+
 
 
     #Apply tag to all returned time entries
