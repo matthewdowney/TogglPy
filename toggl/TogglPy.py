@@ -218,9 +218,21 @@ class Toggl():
 
         return json.loads(urlopen(request).read())
 
+    def getTimeEntries(self, start=None, end=None):
+        """
+        Return the time entrys.  Limited to 1000 entries returned.
+        :param start: Datetime at start of range to pull entries
+        :param end: Datetime at end of range to pull entries
+        """
+        params = {}
+        if start and end:
+            p = {'start_date':start.isoformat(), 'end_date':end.isoformat()}
+        return self.request(Endpoints.TIME_ENTRIES, parameters=params)
+
     # ----------------------------------
     # Methods for getting workspace data
     # ----------------------------------
+
     def getWorkspaces(self):
         '''return all the workspaces for a user'''
         return self.request(Endpoints.WORKSPACES)
