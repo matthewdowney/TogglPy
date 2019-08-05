@@ -39,7 +39,7 @@ class Endpoints():
     START_TIME = "https://www.toggl.com/api/v8/time_entries/start"
     TIME_ENTRIES = "https://www.toggl.com/api/v8/time_entries"
     CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
-
+    ME = "https://www.toggl.com/api/v8/me"
     @staticmethod
     def STOP_TIME(pid):
         return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
@@ -484,3 +484,9 @@ class Toggl():
         """
         response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), method='DELETE')
         return response
+
+    def getMe(self):
+        """
+        return all information about the user
+        """
+        return self.request(Endpoints.ME)
