@@ -1,12 +1,16 @@
-#--------------------------------------------------------------
-# TogglPy is a non-cluttered, easily understood and implemented
-# library for interacting with the Toggl API.
-#--------------------------------------------------------------
+"""
+TogglPy is a non-cluttered, easily understood and implemented
+library for interacting with the Toggl API.
+"""
+import json  # parsing json data
+import math
+import sys
+import time
+from base64 import b64encode
 from datetime import datetime
+
 # for making requests
 # backward compatibility with python2
-import sys
-
 cafile = None
 if sys.version[0] == "2":
     from urllib import urlencode
@@ -21,13 +25,9 @@ else:
         pass
 
 
-from base64 import b64encode
-# parsing json data
-import json
-#
-#---------------------------------------------
+# --------------------------------------------
 # Class containing the endpoint URLs for Toggl
-#---------------------------------------------
+# --------------------------------------------
 class Endpoints():
     WORKSPACES = "https://www.toggl.com/api/v8/workspaces"
     CLIENTS = "https://www.toggl.com/api/v8/clients"
@@ -38,16 +38,16 @@ class Endpoints():
     REPORT_SUMMARY = "https://toggl.com/reports/api/v2/summary"
     START_TIME = "https://www.toggl.com/api/v8/time_entries/start"
     TIME_ENTRIES = "https://www.toggl.com/api/v8/time_entries"
+    CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
+
     @staticmethod
     def STOP_TIME(pid):
         return "https://www.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
-    CURRENT_RUNNING_TIME = "https://www.toggl.com/api/v8/time_entries/current"
 
 
-
-#-------------------------------------------------------
+# ------------------------------------------------------
 # Class containing the necessities for Toggl interaction
-#-------------------------------------------------------
+# ------------------------------------------------------
 class Toggl():
     # template of headers for our request
     headers = {
@@ -60,16 +60,16 @@ class Toggl():
     # default API user agent value
     user_agent = "TogglPy"
 
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
     # Auxiliary methods
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
 
     def decodeJSON(self, jsonString):
         return json.JSONDecoder().decode(jsonString)
 
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
     # Methods that modify the headers to control our HTTP requests
-    #-------------------------------------------------------------
+    # ------------------------------------------------------------
     def setAPIKey(self, APIKey):
         '''set the API key in the request header'''
         # craft the Authorization
@@ -90,31 +90,39 @@ class Toggl():
         '''set the User-Agent setting, by default it's set to TogglPy'''
         self.user_agent = agent
 
-    #------------------------------------------------------
+    # -----------------------------------------------------
     # Methods for directly requesting data from an endpoint
-    #------------------------------------------------------
+    # -----------------------------------------------------
 
     def requestRaw(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
-        if parameters == None:
+        if parameters is None:
             return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
         else:
             if 'user_agent' not in parameters:
-                parameters.update( {'user_agent' : self.user_agent,} ) # add our class-level user agent in there
-            endpoint = endpoint + "?" + urlencode(parameters) # encode all of our data for a get request & modify the URL
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read() # make request and read the response
+                parameters.update({'user_agent': self.user_agent})  # add our class-level user agent in there
+            # encode all of our data for a get request & modify the URL
+            endpoint = endpoint + "?" + urlencode(parameters)
+            # make request and read the response
+            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read()
 
     def request(self, endpoint, parameters=None):
         '''make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict'''
         return json.loads(self.requestRaw(endpoint, parameters).decode('utf-8'))
 
-    def postRequest(self, endpoint, parameters=None):
+    def postRequest(self, endpoint, parameters=None, method='POST'):
         '''make a POST request to the toggle api at a certain endpoint and return the RAW page data (usually JSON)'''
-        if parameters == None:
-            return urlopen(Request(endpoint, headers=self.headers), cafile=cafile).read().decode('utf-8')
+        if method == 'DELETE':  # Calls to the API using the DELETE mothod return a HTTP response rather than JSON
+            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).code
+        if parameters is None:
+            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
-            return urlopen(Request(endpoint, data=data, headers=self.headers), cafile=cafile).read().decode('utf-8') # make request and read the response
+            binary_data = data.encode('utf-8')
+            # make request and read the response
+            return urlopen(
+                Request(endpoint, data=binary_data, headers=self.headers, method=method), cafile=cafile
+            ).read().decode('utf-8')
 
 
     def putRequest(self, endpoint, parameters=None):
@@ -136,17 +144,23 @@ class Toggl():
 
     #----------------------------------
     # Methods for managing Time Entries
-    #----------------------------------
+    # ---------------------------------
 
-    def startTimeEntry(self, description, pid):
+    def startTimeEntry(self, description, pid=None, tid=None):
         '''starts a new Time Entry'''
+
         data = {
             "time_entry": {
-            "description": description,
-            "pid": pid,
-            "created_with": self.user_agent
+                "created_with": self.user_agent,
+                "description": description
             }
         }
+        if pid:
+            data["time_entry"]["pid"] = pid
+
+        if tid:
+            data["time_entry"]["tid"] = tid
+
         response = self.postRequest(Endpoints.START_TIME, parameters=data)
         return self.decodeJSON(response)
 
@@ -195,15 +209,14 @@ class Toggl():
         if taskid:
             data['time_entry']['tid'] = taskid
 
-
         year = datetime.now().year if not year else year
         month = datetime.now().month if not month else month
         day = datetime.now().day if not day else day
         hour = datetime.now().hour if not hour else hour
 
-        timestruct = datetime(year, month, day, hour-2).isoformat() + '.000Z'
+        timestruct = datetime(year, month, day, hour - 2).isoformat() + '.000Z'
         data['time_entry']['start'] = timestruct
-        data['time_entry']['duration'] = hourduration*3600
+        data['time_entry']['duration'] = hourduration * 3600
         data['time_entry']['pid'] = projectid
         data['time_entry']['created_with'] = 'NAME'
 
@@ -211,78 +224,89 @@ class Toggl():
         return self.decodeJSON(response)
 
     def putTimeEntry(self, parameters):
-        if not 'id' in parameters:
+        if 'id' not in parameters:
             raise Exception("An id must be provided in order to put a time entry")
         id = parameters['id']
         if type(id) is not int:
-            raise Exception("Invalid id %s provided " % ( id ) )
-        endpoint = Endpoints.TIME_ENTRIES  + "/" + str(id) # encode all of our data for a put request & modify the URL
+            raise Exception("Invalid id %s provided " % (id))
+        endpoint = Endpoints.TIME_ENTRIES + "/" + str(id)  # encode all of our data for a put request & modify the URL
         data = json.JSONEncoder().encode({'time_entry': parameters})
-        request = urllib2.Request(endpoint, data=data, headers=self.headers)
-        request.get_method = lambda:"PUT"
+        request = Request(endpoint, data=data, headers=self.headers)
+        request.get_method = lambda: "PUT"
 
-        return json.loads(urllib2.urlopen(request).read())
+        return json.loads(urlopen(request).read())
 
-    #-----------------------------------
+    # ----------------------------------
     # Methods for getting workspace data
-    #-----------------------------------
+    # ----------------------------------
     def getWorkspaces(self):
         '''return all the workspaces for a user'''
         return self.request(Endpoints.WORKSPACES)
 
     def getWorkspace(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
-        workspaces = self.getWorkspaces() # get all workspaces
+        workspaces = self.getWorkspaces()  # get all workspaces
 
         # if they give us nothing let them know we're not returning anything
-        if name == None and id == None:
+        if name is None and id is None:
             print("Error in getWorkspace(), please enter either a name or an id as a filter")
             return None
 
-        if id == None: # then we search by name
-            for workspace in workspaces: # search through them for one matching the name provided
+        if id is None:  # then we search by name
+            for workspace in workspaces:  # search through them for one matching the name provided
                 if workspace['name'] == name:
-                    return workspace # if we find it return it
-            return None # if we get to here and haven't found it return None
-        else: # otherwise search by id
-            for workspace in workspaces: # search through them for one matching the id provided
+                    return workspace  # if we find it return it
+            return None  # if we get to here and haven't found it return None
+        else:  # otherwise search by id
+            for workspace in workspaces:  # search through them for one matching the id provided
                 if workspace['id'] == int(id):
-                    return workspace # if we find it return it
-            return None # if we get to here and haven't found it return None
+                    return workspace  # if we find it return it
+            return None  # if we get to here and haven't found it return None
 
-    #--------------------------------
+    def getWorkspaceProjects(self, id):
+        """
+        Return all of the projects for a given Workspace
+        :param id: Workspace ID by which to query
+        :return: Projects object returned from endpoint
+        """
+
+        return self.request(Endpoints.WORKSPACES + '/{0}'.format(id) + '/projects')
+
+    # -------------------------------
     # Methods for getting client data
-    #--------------------------------
+    # -------------------------------
+
     def getClients(self):
         '''return all clients that are visable to a user'''
         return self.request(Endpoints.CLIENTS)
 
     def getClient(self, name=None, id=None):
         '''return the first workspace that matches a given name or id'''
-        clients = self.getClients() # get all clients
+        clients = self.getClients()  # get all clients
 
         # if they give us nothing let them know we're not returning anything
-        if name == None and id == None:
+        if name is None and id is None:
             print("Error in getClient(), please enter either a name or an id as a filter")
             return None
 
-        if id == None: # then we search by name
-            for client in clients: # search through them for one matching the name provided
+        if id is None:  # then we search by name
+            for client in clients:  # search through them for one matching the name provided
                 if client['name'] == name:
-                    return client # if we find it return it
-            return None # if we get to here and haven't found it return None
-        else: # otherwise search by id
-            for client in clients: # search through them for one matching the id provided
+                    return client  # if we find it return it
+            return None  # if we get to here and haven't found it return None
+        else:  # otherwise search by id
+            for client in clients:  # search through them for one matching the id provided
                 if client['id'] == int(id):
-                    return client # if we find it return it
-            return None # if we get to here and haven't found it return None
+                    return client  # if we find it return it
+            return None  # if we get to here and haven't found it return None
 
-    def getClientProjects(self, id):
+    def getClientProjects(self, id, active='true'):
         """
         :param id: Client ID by which to query
+        :param active: possible values true/false/both. By default true. If false, only archived projects are returned.
         :return: Projects object returned from endpoint
         """
-        return self.request(Endpoints.CLIENTS + '/{0}/projects'.format(id))
+        return self.request(Endpoints.CLIENTS + '/{0}/projects?active={1}'.format(id, active))
 
     def searchClientProject(self, name):
         """
@@ -297,7 +321,7 @@ class Toggl():
                 for project in self.getClientProjects(client['id']):
                     if project['name'] == name:
                         return project
-            except:
+            except Exception:
                 continue
 
         print('Could not find client by the name')
@@ -343,9 +367,32 @@ class Toggl():
         """
         return self.request(Endpoints.PROJECTS + '/{0}'.format(pid) + '/tasks')
 
-    #---------------------------------
+    # --------------------------------
+    # Methods for interacting with TASKS data
+    # --------------------------------
+
+    def createTask(self, name, pid, active=True, estimatedSeconds=False):
+        """
+        create a new task (Requirement: Toggl Starter or higher)
+        :param name: Name of the task
+        :param pid: Project ID
+        :param active: Defines if the task is active or archived, default: active
+        :param estimatedSeconds: Estimation for the task in seconds
+        """
+
+        data = {}
+        data['task'] = {}
+        data['task']['name'] = name
+        data['task']['pid'] = pid
+        data['task']['active'] = active
+        data['task']['estimated_seconds'] = estimatedSeconds
+
+        response = self.postRequest(Endpoints.TASKS, parameters=data)
+        return self.decodeJSON(response)
+
+    # --------------------------------
     # Methods for getting reports data
-    #---------------------------------
+    # ---------------------------------
     def getWeeklyReport(self, data):
         '''return a weekly report for a user'''
         return self.request(Endpoints.REPORT_WEEKLY, parameters=data)
@@ -363,6 +410,21 @@ class Toggl():
         '''return a detailed report for a user'''
         return self.request(Endpoints.REPORT_DETAILED, parameters=data)
 
+    def getDetailedReportPages(self, data):
+        '''return detailed report data from all pages for a user'''
+        pages_index = 1
+        data['page'] = pages_index
+        pages = self.request(Endpoints.REPORT_DETAILED, parameters=data)
+        try:
+            pages_number = math.ceil(pages.get('total_count', 0) / pages.get('per_page', 0))
+        except ZeroDivisionError:
+            pages_number = 0
+        for pages_index in range(2, pages_number + 1):
+            time.sleep(1)  # There is rate limiting of 1 request per second (per IP per API token).
+            data['page'] = pages_index
+            pages['data'].extend(self.request(Endpoints.REPORT_DETAILED, parameters=data).get('data', []))
+        return pages
+
     def getDetailedReportPDF(self, data, filename):
         '''save a detailed report as a pdf'''
         # get the raw pdf file data
@@ -373,7 +435,7 @@ class Toggl():
             pdf.write(filedata)
 
     def getDetailedReportCSV(self, data, filename=None):
-        '''save a detailed report as a pdf'''
+        '''save a detailed report as a csv'''
         # get the raw pdf file data
         filedata = self.requestRaw(Endpoints.REPORT_DETAILED + ".csv", parameters=data)
 
@@ -427,3 +489,47 @@ class Toggl():
 
         response = self.putRequest(Endpoints.TIME_ENTRIES+ "/"+time_IDs, parameters=data)
         return self.decodeJSON(response)
+
+    # --------------------------------
+    # Methods for creating, updating, and deleting clients
+    # ---------------------------------
+    def createClient(self, name, wid, notes=None):
+        """
+        create a new client
+        :param name: Name the client
+        :param wid: Workspace ID
+        :param notes: Notes for the client (optional)
+        """
+
+        data = {}
+        data['client'] = {}
+        data['client']['name'] = name
+        data['client']['wid'] = wid
+        data['client']['notes'] = notes
+
+        response = self.postRequest(Endpoints.CLIENTS, parameters=data)
+        return self.decodeJSON(response)
+
+    def updateClient(self, id, name=None, notes=None):
+        """
+        Update data for an existing client. If the name or notes parameter is not supplied, the existing data on the Toggl server will not be changed.
+        :param id: The id of the client to update
+        :param name: Update the name of the client (optional)
+        :param notes: Update the notes for the client (optional)
+        """
+
+        data = {}
+        data['client'] = {}
+        data['client']['name'] = name
+        data['client']['notes'] = notes
+
+        response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), parameters=data, method='PUT')
+        return self.decodeJSON(response)
+
+    def deleteClient(self, id):
+        """
+        Delete the specified client
+        :param id: The id of the client to delete
+        """
+        response = self.postRequest(Endpoints.CLIENTS + '/{0}'.format(id), method='DELETE')
+        return response

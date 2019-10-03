@@ -6,7 +6,7 @@ NAME
     TogglPy
 
 FILE
-    TogglPy.py
+    toggl/TogglPy.py
 
 DESCRIPTION
     #--------------------------------------------------------------
@@ -53,7 +53,13 @@ CLASSES
      |  
      |  getWorkspaces(self)
      |      return all the workspaces for a user
-     |  
+     |
+     |  getDetailedReportPages(self, data)
+     |      return detailed report data from all pages for a user
+     |
+     |  getWorkspaceProjects(self, id)
+     |      return all of the projects for a given Workspace
+     |
      |  request(self, endpoint, parameters=None)
      |      make a request to the toggle api at a certain endpoint and return the page data as a parsed JSON dict
      |  
