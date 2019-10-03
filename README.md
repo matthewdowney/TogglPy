@@ -1,4 +1,7 @@
 # TogglPy
+
+[![Latest PyPI version](https://img.shields.io/pypi/v/TogglPy.svg)](https://pypi.org/project/TogglPy/)
+
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
 
 # This fork:
@@ -142,7 +145,8 @@ toggl.setAPIKey("mytogglapikey")
 response = toggl.request("https://www.toggl.com/api/v8/clients")
 
 # print the client name and id for each client in the response
-# list of returned values can be found in the Toggl docs (https://github.com/toggl/toggl_api_docs/blob/master/chapters/clients.md)
+# list of returned values can be found in the Toggl docs:
+# https://github.com/toggl/toggl_api_docs/blob/master/chapters/clients.md
 for client in response:
     print "Client name: %s  Client id: %s" % (client['name'], client['id'])
 ```
@@ -216,7 +220,8 @@ The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000
 ### Starting New Timer
 
 ```python
-# You can get your project pid in toggl.com->Projects->(select your project) and copying the last number of the url
+# You can get your project pid in toggl.com->Projects->(select your project)
+# and copying the last number of the url
 myprojectpid = 10959693
 toggl.startTimeEntry("my description", myprojectpid)
 ```

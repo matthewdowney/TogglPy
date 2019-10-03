@@ -1,6 +1,7 @@
 import os
 import unittest
-from TogglPy import Toggl
+
+from toggl.TogglPy import Toggl
 
 # these tests assume three  things:
 #
