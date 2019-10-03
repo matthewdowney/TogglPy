@@ -114,29 +114,31 @@ This can be useful for finding unbilled time.  Run `python run.py --tags 0 --add
 * Add custom time entries
 
 # Setup
-+ Download the project, or download **TogglPy.py** for local usage
-+ Import the content:
++ Install the project with pip:
+```shell
+pip install -U TogglPy
+```
++ Import the content: 
 ```python
-from TogglPy import Toggl
 ```
 + Create a Toggl object:
 ```python
 toggl = Toggl()
 ```
 + Authenticate either by Toggl credentials OR using [your personal API token](https://toggl.com/app/profile):
-``` python
-toggl.setAuthCredentials('<EMAIL>', '<PASSWORD>')
+```python
+toggl.setAuthCredentials('<EMAIL>', '<PASSWORD>') 
 ```
 OR:
-``` python
-toggl.setAPIKey('<API-TOKEN>')
+```python
+toggl.setAPIKey('<API-TOKEN>') 
 ```
 
 
 # I learn best by examples:
 ### Manual GET requests against any Toggl endpoint:
 ```python
-from TogglPy import Toggl
+from toggl.TogglPy import Toggl
 
 # create a Toggl object and set our API key
 toggl = Toggl()
