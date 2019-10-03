@@ -18,6 +18,11 @@ toggl = Toggl()
 
 toggl.setAPIKey(API_KEY)
 
+# Something like this next line would be ideal but it's not currently easy to access task IDs.
+# (The only way I currently know how is to create a new task using the API and get the ID from the return value.
+#  See readme for an example of how to do this.)
+
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -57,6 +62,7 @@ def roundTime(dt=None, roundTo=60):
    return dt + datetime.timedelta(0,rounding-seconds,-dt.microsecond)
 
 def formatDuration(duration):
+
     seconds = int(duration.total_seconds()) #total_seconds required to prevent periods longer than 24hrs breaking
     durHours = str(seconds//3600)
     durMins = str((seconds//60)%60)
@@ -141,7 +147,6 @@ curl -v -u API_TOKEN:api_token \
 
     if x.nocolors:
         terminalColors = False # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
-
 
     if x.period:
         data['since'] = x.period[0]
@@ -244,9 +249,15 @@ curl -v -u API_TOKEN:api_token \
                 print colorText(bcolors.OKBLUE, timeentry['project'])
             else:
                 print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
+            #print "\t" + timeentry['project']
 
-        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
-        end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+        try:
+            start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
+            end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+12:00'),roundTo=5*60)
+        except:
+            start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
+            end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+
         prevDuration = datetime.timedelta(0)
         if 'thisDuration' in locals():
             prevDuration = thisDuration
@@ -258,10 +269,17 @@ curl -v -u API_TOKEN:api_token \
         end = end.strftime('%I:%M%p')
 
         if x.format:
-            prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+            try:
+                prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00')
+            except:
+                prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
             if 'date' in locals():
                 prevDate = date
-            date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+            try:
+                date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00')
+            except:
+                date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+
             if date - prevDate > datetime.timedelta(2):
                 print ""
             if date - prevDate < datetime.timedelta(0.5) and date - prevDate != datetime.timedelta(0):
@@ -280,6 +298,31 @@ curl -v -u API_TOKEN:api_token \
         print colorText(bcolors.HEADER, "Total: " + formatDuration(projDuration)) # Print duration of last project
     else:
         print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration)) # Print duration of last project
+
+
+    #Apply tag to all returned time entries
+    if x.addtags:
+        tags = x.addtags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.addTags(timeentryIDs, tags)
+
+    #Remove tag from all returned time entries
+    if x.removetags:
+        tags = x.removetags
+
+        if x.debug:
+            print "Tags: " + str(tags)
+            print "Time entry IDs: " + timeentryIDs
+        timeentryIDs = timeentryIDs[:-1] #Remove last comma
+
+        toggl.removeTags(timeentryIDs, tags)
+
+
 
     #Apply tag to all returned time entries
     if x.addtags:
