@@ -258,8 +258,12 @@ curl -v -u API_TOKEN:api_token \
                 print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
             #print "\t" + timeentry['project']
 
-        start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
-        end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+        try:
+            start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
+            end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+12:00'),roundTo=5*60)
+        except:
+            start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
+            end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
         prevDuration = datetime.timedelta(0)
         if 'thisDuration' in locals():
             prevDuration = thisDuration
@@ -271,10 +275,16 @@ curl -v -u API_TOKEN:api_token \
         end = end.strftime('%I:%M%p')
 
         if x.format:
-            prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+            try:
+                prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00')
+            except:
+                prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
             if 'date' in locals():
                 prevDate = date
-            date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+            try:
+                date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00')
+            except:
+                date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
             if date - prevDate > datetime.timedelta(2):
                 print ""
             if date - prevDate < datetime.timedelta(0.5) and date - prevDate != datetime.timedelta(0):
