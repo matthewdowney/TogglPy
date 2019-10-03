@@ -18,11 +18,9 @@ toggl = Toggl()
 
 toggl.setAPIKey(API_KEY)
 
-
 # Something like this next line would be ideal but it's not currently easy to access task IDs.
 # (The only way I currently know how is to create a new task using the API and get the ID from the return value.
 #  See readme for an example of how to do this.)
-
 
 
 class bcolors:
@@ -88,8 +86,6 @@ def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
     return next_month - datetime.timedelta(days=next_month.day)
 
-
-
 def main(argv):
     desc="""This program provides some basic command line Toggl reporting."""
     epilog="""Based on Matthew Downey's TogglPy library (https://github.com/matthewdowney/TogglPy/).
@@ -114,7 +110,6 @@ def main(argv):
         'tag_ids': '', # Setting to 0 actually filters OUT entries WITH tags.. Documentation incorrect?
         'client_ids': ''
     }
-
 
     x=parser.parse_args()
 
@@ -231,8 +226,6 @@ curl -v -u API_TOKEN:api_token \
                 detailedData = toggl.getDetailedReport(data)
                 #print "page " + str(data['page'])
 
-
-
     print "Total hours: " + str(round(totalTime / float(3600000), 2))
 
     sortedData = sorted(detailedData2['data'])
@@ -264,6 +257,7 @@ curl -v -u API_TOKEN:api_token \
         except:
             start = roundTime(datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60) #12:00 is the timezone. Required for toggl API to work
             end = roundTime(datetime.datetime.strptime(timeentry['end'], '%Y-%m-%dT%H:%M:%S+13:00'),roundTo=5*60)
+
         prevDuration = datetime.timedelta(0)
         if 'thisDuration' in locals():
             prevDuration = thisDuration
@@ -285,6 +279,7 @@ curl -v -u API_TOKEN:api_token \
                 date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00')
             except:
                 date = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+13:00')
+
             if date - prevDate > datetime.timedelta(2):
                 print ""
             if date - prevDate < datetime.timedelta(0.5) and date - prevDate != datetime.timedelta(0):
@@ -329,9 +324,6 @@ curl -v -u API_TOKEN:api_token \
 
 
 
-
-
-
     #Apply tag to all returned time entries
     if x.addtags:
         tags = x.addtags
@@ -353,11 +345,6 @@ curl -v -u API_TOKEN:api_token \
         timeentryIDs = timeentryIDs[:-1] #Remove last comma
 
         toggl.removeTags(timeentryIDs, tags)
-
-
-
-
-
 
 if __name__ == "__main__":
    main(sys.argv[1:])

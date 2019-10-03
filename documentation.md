@@ -1,4 +1,4 @@
-#TogglPy Documentation
+# TogglPy Documentation
 This page will serve as lightweight documentation for TogglPy.
 
 ```
