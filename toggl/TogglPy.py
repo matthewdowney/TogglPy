@@ -157,7 +157,8 @@ class Toggl():
         return self.decodeJSON(response)
 
     def createTimeEntry(self, hourduration, description=None, projectid=None, projectname=None,
-                        taskid=None, clientname=None, year=None, month=None, day=None, hour=None):
+                        taskid=None, clientname=None, year=None, month=None, day=None, hour=None,
+                        billable=False):
         """
         Creating a custom time entry, minimum must is hour duration and project param
         :param hourduration:
@@ -201,6 +202,7 @@ class Toggl():
         data['time_entry']['duration'] = hourduration * 3600
         data['time_entry']['pid'] = projectid
         data['time_entry']['created_with'] = 'NAME'
+        data['time_entry']['billable'] = billable
 
         response = self.postRequest(Endpoints.TIME_ENTRIES, parameters=data)
         return self.decodeJSON(response)
