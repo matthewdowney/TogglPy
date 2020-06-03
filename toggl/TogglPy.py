@@ -197,7 +197,7 @@ class Toggl():
         day = datetime.now().day if not day else day
         hour = datetime.now().hour if not hour else hour
 
-        timestruct = datetime(year, month, day, hour - hourdiff).isoformat() + '.000Z'
+        timestruct = datetime(year, month, day, hour + hourdiff).isoformat() + '.000Z'
         data['time_entry']['start'] = timestruct
         data['time_entry']['duration'] = hourduration * 3600
         data['time_entry']['pid'] = projectid
