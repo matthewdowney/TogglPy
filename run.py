@@ -122,10 +122,10 @@ def main(argv):
         'client_ids': ''
     }
 
-    x = parser.parse_args()
+    args = parser.parse_args()
 
     # Print client names & IDs
-    if x.getclientids:
+    if args.getclientids:
 
         filename = 'data.json'
         with open(filename, 'r') as f:
@@ -141,7 +141,7 @@ def main(argv):
 
         exit()
 
-    if x.addtags or x.removetags:
+    if args.addtags or args.removetags:
         timeentryIDs = ""
 
     '''
@@ -155,14 +155,14 @@ curl -v -u API_TOKEN:api_token \
 
     terminalColors = True
 
-    if x.nocolors:
+    if args.nocolors:
         # Display colors in the terminal.  Set to false for clean output (e.g. if piping to a file).
         terminalColors = False
 
-    if x.period:
-        data['since'] = x.period[0]
+    if args.period:
+        data['since'] = args.period[0]
         try:
-            data['until'] = x.period[1]
+            data['until'] = args.period[1]
         except IndexError:
             data['until'] = datetime.datetime.today().strftime('%Y-%m-%d')  # Today
     else:
@@ -170,12 +170,12 @@ curl -v -u API_TOKEN:api_token \
         data['until'] = last_day_of_month(datetime.date.today())  # Last day of current month
         print colorText(bcolors.WARNING, "No time period specified.  Reporting on current month.")
 
-    if x.tags:
+    if args.tags:
         filename = 'data.json'
         with open(filename, 'r') as f:
             jsondata = json.load(f)
 
-        for tag in x.tags:
+        for tag in args.tags:
             # If digits, assume tag ID.  If chars, assume tag name and look up ID in data.json.
             if tag.isdigit() == True:
                 # We have a tag ID
@@ -186,12 +186,12 @@ curl -v -u API_TOKEN:api_token \
 
             data['tag_ids'] += str(tagid) + ","  # Trailing comma doesn't matter so this is ok
 
-    if x.clients:
+    if args.clients:
         filename = 'data.json'
         with open(filename, 'r') as f:
             jsondata = json.load(f)
 
-        for client in x.clients:
+        for client in args.clients:
             # If digits, assume client ID.  If chars, assume client name and look up ID in data.json.
             if client.isdigit() == True:
                 # We have a client ID
@@ -202,7 +202,7 @@ curl -v -u API_TOKEN:api_token \
 
             data['client_ids'] += str(clientid) + ","  # Trailing comma doesn't matter so this is ok
 
-    if x.debug:
+    if args.debug:
         print data
 
     detailedData = toggl.getDetailedReport(data)
@@ -218,10 +218,10 @@ curl -v -u API_TOKEN:api_token \
 
     while item_count > 0:
         for timeentry in detailedData['data']:
-            if x.debug:
+            if args.debug:
                 print timeentry
 
-            if x.addtags or x.removetags:
+            if args.addtags or args.removetags:
                 timeentryIDs += str(timeentry['id'])+","
 
             detailedData2.update(timeentry)
@@ -254,7 +254,7 @@ curl -v -u API_TOKEN:api_token \
             print colorText(bcolors.OKGREEN, timeentry['client'])
         if project != timeentry['project']:
             print ""
-            if x.format:
+            if args.format:
                 print colorText(bcolors.OKBLUE, timeentry['project'])
             else:
                 print "\t" + colorText(bcolors.OKBLUE, timeentry['project'])
@@ -279,7 +279,7 @@ curl -v -u API_TOKEN:api_token \
         start = start.strftime('%d/%m/%Y %I:%M%p')
         end = end.strftime('%I:%M%p')
 
-        if x.format:
+        if args.format:
             try:
                 prevDate = datetime.datetime.strptime(timeentry['start'], '%Y-%m-%dT%H:%M:%S+12:00')
             except:
@@ -305,17 +305,17 @@ curl -v -u API_TOKEN:api_token \
         client = timeentry['client']
         project = timeentry['project']
 
-    if x.format:
+    if args.format:
         print colorText(bcolors.HEADER, "Total: " + formatDuration(projDuration))  # Print duration of last project
     else:
         # Print duration of last project
         print colorText(bcolors.HEADER, "\tProject Duration: " + formatDuration(projDuration))
 
     # Apply tag to all returned time entries
-    if x.addtags:
-        tags = x.addtags
+    if args.addtags:
+        tags = args.addtags
 
-        if x.debug:
+        if args.debug:
             print "Tags: " + str(tags)
             print "Time entry IDs: " + timeentryIDs
         timeentryIDs = timeentryIDs[:-1]  # Remove last comma
@@ -323,10 +323,10 @@ curl -v -u API_TOKEN:api_token \
         toggl.addTags(timeentryIDs, tags)
 
     # Remove tag from all returned time entries
-    if x.removetags:
-        tags = x.removetags
+    if args.removetags:
+        tags = args.removetags
 
-        if x.debug:
+        if args.debug:
             print "Tags: " + str(tags)
             print "Time entry IDs: " + timeentryIDs
         timeentryIDs = timeentryIDs[:-1]  # Remove last comma
@@ -334,10 +334,10 @@ curl -v -u API_TOKEN:api_token \
         toggl.removeTags(timeentryIDs, tags)
 
     # Apply tag to all returned time entries
-    if x.addtags:
-        tags = x.addtags
+    if args.addtags:
+        tags = args.addtags
 
-        if x.debug:
+        if args.debug:
             print "Tags: " + str(tags)
             print "Time entry IDs: " + timeentryIDs
         timeentryIDs = timeentryIDs[:-1]  # Remove last comma
@@ -345,10 +345,10 @@ curl -v -u API_TOKEN:api_token \
         toggl.addTags(timeentryIDs, tags)
 
     # Remove tag from all returned time entries
-    if x.removetags:
-        tags = x.removetags
+    if args.removetags:
+        tags = args.removetags
 
-        if x.debug:
+        if args.debug:
             print "Tags: " + str(tags)
             print "Time entry IDs: " + timeentryIDs
         timeentryIDs = timeentryIDs[:-1]  # Remove last comma
