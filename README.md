@@ -27,6 +27,7 @@ from toggl.TogglPy import Toggl
 toggl = Toggl()
 ```
 + Authenticate either by Toggl credentials OR using [your personal API token](https://toggl.com/app/profile):
+	+ If trying to access any of the [Reports API](https://github.com/matthewdowney/TogglPy#generating-pdf-reports) endpoints, [you need to use](https://github.com/toggl/toggl_api_docs/blob/master/reports.md#authentication) your personal API token
 ```python
 toggl.setAuthCredentials('<EMAIL>', '<PASSWORD>') 
 ```
@@ -83,6 +84,7 @@ response = toggl.postRequest("https://www.toggl.com/api/v8/projects", parameters
 
 
 ### Generating PDF reports:
+**Must** authenticate with your personal API token to use these endpoints.
 ```python
 # specify that we want reports from this week
 data = {
