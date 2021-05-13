@@ -46,7 +46,7 @@ from toggl.TogglPy import Toggl
 toggl = Toggl()
 toggl.setAPIKey("mytogglapikey")
 
-response = toggl.request("https://www.toggl.com/api/v8/clients")
+response = toggl.request("https://api.track.toggl.com/api/v8/clients")
 
 # print the client name and id for each client in the response
 # list of returned values can be found in the Toggl docs:
@@ -61,7 +61,7 @@ data = {
     'some_key': 'some_value',
     'user_agent': 'TogglPy_test',
 }   
-response = toggl.request("https://www.toggl.com/api/v8/some/endpoint", parameters=data)
+response = toggl.request("https://api.track.toggl.com/api/v8/some/endpoint", parameters=data)
 ```
 
 ### Making a POST request to any Toggl endpoint:
@@ -78,7 +78,7 @@ data = {
         }
     }
 
-response = toggl.postRequest("https://www.toggl.com/api/v8/projects", parameters=data)
+response = toggl.postRequest("https://api.track.toggl.com/api/v8/projects", parameters=data)
 
 ```
 
