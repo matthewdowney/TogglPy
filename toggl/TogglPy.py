@@ -214,9 +214,8 @@ class Toggl():
         if type(id) is not int:
             raise Exception("Invalid id %s provided " % (id))
         endpoint = Endpoints.TIME_ENTRIES + "/" + str(id)  # encode all of our data for a put request & modify the URL
-        data = json.JSONEncoder().encode({'time_entry': parameters})
-        request = Request(endpoint, data=data, headers=self.headers)
-        request.get_method = lambda: "PUT"
+        data = json.JSONEncoder().encode({'time_entry': parameters}).encode('utf-8')
+        request = Request(endpoint, data=data, headers=self.headers, method='PUT')
 
         return json.loads(urlopen(request).read())
 
