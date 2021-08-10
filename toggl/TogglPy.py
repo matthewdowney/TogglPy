@@ -41,8 +41,8 @@ class Endpoints():
     CURRENT_RUNNING_TIME = "https://api.track.toggl.com/api/v8/time_entries/current"
 
     @staticmethod
-    def STOP_TIME(pid):
-        return "https://api.track.toggl.com/api/v8/time_entries/" + str(pid) + "/stop"
+    def STOP_TIME(id):
+        return "https://api.track.toggl.com/api/v8/time_entries/" + str(id) + "/stop"
 
 
 # ------------------------------------------------------
@@ -148,13 +148,13 @@ class Toggl():
 
     def currentRunningTimeEntry(self):
         '''Gets the Current Time Entry'''
-        response = self.postRequest(Endpoints.CURRENT_RUNNING_TIME)
-        return self.decodeJSON(response)
+        response = self.request(Endpoints.CURRENT_RUNNING_TIME)
+        return response
 
     def stopTimeEntry(self, entryid):
         '''Stop the time entry'''
-        response = self.postRequest(Endpoints.STOP_TIME(entryid))
-        return self.decodeJSON(response)
+        response = self.request(Endpoints.STOP_TIME(entryid))
+        return response
 
     def createTimeEntry(self, hourduration, description=None, projectid=None, projectname=None,
                         taskid=None, clientname=None, year=None, month=None, day=None, hour=None,
@@ -218,6 +218,12 @@ class Toggl():
         request = Request(endpoint, data=data, headers=self.headers, method='PUT')
 
         return json.loads(urlopen(request).read())
+
+    def deleteTimeEntry(self, entryid):
+        '''Delete the time entry'''
+        endpoint = Endpoints.TIME_ENTRIES + "/" + str(entryid)
+        response = self.postRequest(endpoint, method='DELETE')
+        return response
 
     # ----------------------------------
     # Methods for getting workspace data
