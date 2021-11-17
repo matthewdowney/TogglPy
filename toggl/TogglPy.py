@@ -148,12 +148,12 @@ class Toggl():
 
     def currentRunningTimeEntry(self):
         '''Gets the Current Time Entry'''
-        response = self.request(Endpoints.CURRENT_RUNNING_TIME, method="GET")
+        response = self.postRequest(Endpoints.CURRENT_RUNNING_TIME, method="GET")
         return response
 
     def stopTimeEntry(self, entryid):
         '''Stop the time entry'''
-        response = self.request(Endpoints.STOP_TIME(entryid))
+        response = self.postRequest(Endpoints.STOP_TIME(entryid), method="PUT")
         return response
 
     def createTimeEntry(self, hourduration, description=None, projectid=None, projectname=None,
