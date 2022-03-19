@@ -9,7 +9,7 @@ TogglPy is a python library for interacting with the [Toggl API](https://github.
 * Generate and save PDFs of summary, weekly, or detailed reports
 * Fetch reports as JSON
 * Get all workspaces or all clients
-* Get a specific workspace or client, by id or name
+* Get a specific workspace or client, by ID or name
 * Query projects, by client, or by a single name
 * Add custom time entries
 
@@ -48,11 +48,11 @@ toggl.setAPIKey("mytogglapikey")
 
 response = toggl.request("https://api.track.toggl.com/api/v8/clients")
 
-# print the client name and id for each client in the response
+# print the client name and ID for each client in the response
 # list of returned values can be found in the Toggl docs:
 # https://github.com/toggl/toggl_api_docs/blob/master/chapters/clients.md
 for client in response:
-    print("Client name: %s  Client id: %s" % (client['name'], client['id']))
+    print("Client name: %s  Client ID: %s" % (client['name'], client['id']))
 ```
 Or, if you want to add some data to your request:
 ```python
@@ -88,7 +88,7 @@ response = toggl.postRequest("https://api.track.toggl.com/api/v8/projects", para
 ```python
 # specify that we want reports from this week
 data = {
-    'workspace_id': 0000, # see the next example for getting a workspace id
+    'workspace_id': 0000, # see the next example for getting a workspace ID
     'since': '2015-04-27',
     'until': '2015-05-03',
 }
@@ -108,24 +108,24 @@ print(toggl.getClients())
 If you want to clean it up a little replace those print statements with
 ```python
 for workspace in toggl.getWorkspaces():
-    print("Workspace name: %s\tWorkspace id:%s" % (workspace['name'], workspace['id']))
+    print("Workspace name: %s\tWorkspace ID:%s" % (workspace['name'], workspace['id']))
 for client in toggl.getClients():
-    print("Client name: %s\tClient id:%s" % (client['name'], client['id']))
+    print("Client name: %s\tClient ID:%s" % (client['name'], client['id']))
 ```
 If you want to find a specific client or workspace:
 ```python
 john_doe = toggl.getClient(name="John Doe")
 personal = toggl.getWorkspace(name="Personal")
 
-print("John's client id is %s" % john_doe['id'])
-print("The workspace id for 'Personal' is %s" % personal['id'])
+print("John's client ID is %s" % john_doe['id'])
+print("The workspace ID for 'Personal' is %s" % personal['id'])
 ```
-The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000)` to find items by id.
+The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000)` to find items by ID.
 
 ### Starting New Timer
 
 ```python
-# You can get your project pid in toggl.com->Projects->(select your project)
+# You can get your project PID in toggl.com->Projects->(select your project)
 # and copying the last number of the url
 myprojectpid = 10959693
 toggl.startTimeEntry("my description", myprojectpid)
@@ -144,7 +144,7 @@ stopTimeEntry(currentTimer['data']['id'])
 # Create a custom entry for today, of a 9 hour duration, starting at 10 AM:
 toggl.createTimeEntry(hourduration=9, projectname='GoogleDrive', hour=10)
 
-# Or speed up the query process and provide the clien't name:
+# Or speed up the query process and provide the client's name:
 toggl.createTimeEntry(hourduration=9, projectname='GoogleDrive', clientname='Google', hour=10)
 
 # Provide *month* and/or *day* too for specific dates:
