@@ -12,7 +12,7 @@ from datetime import datetime
 # for making requests
 # backward compatibility with python2
 cafile = None
-if sys.version[0] == "2":
+if sys.version_info.major == 2:
     from urllib import urlencode
 
     from urllib2 import Request, urlopen
@@ -116,7 +116,9 @@ class Toggl():
         if method == 'DELETE':  # Calls to the API using the DELETE mothod return a HTTP response rather than JSON
             return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).code
         if parameters is None:
-            return urlopen(Request(endpoint, headers=self.headers, method=method), cafile=cafile).read().decode('utf-8')
+            return urlopen(
+                Request(endpoint, headers=self.headers, method=method), cafile=cafile
+            ).read().decode('utf-8')
         else:
             data = json.JSONEncoder().encode(parameters)
             binary_data = data.encode('utf-8')
@@ -471,7 +473,8 @@ class Toggl():
 
     def updateClient(self, id, name=None, notes=None):
         """
-        Update data for an existing client. If the name or notes parameter is not supplied, the existing data on the Toggl server will not be changed.
+        Update data for an existing client. If the name or notes parameter is not
+        supplied, the existing data on the Toggl server will not be changed.
         :param id: The id of the client to update
         :param name: Update the name of the client (optional)
         :param notes: Update the notes for the client (optional)

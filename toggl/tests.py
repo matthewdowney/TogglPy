@@ -18,12 +18,10 @@ from toggl.TogglPy import Toggl
 #
 
 
-
-
 class TogglPyTests(unittest.TestCase):
 
     def setUp(self):
-        self.api_key      = os.environ['TOGGL_API_KEY']
+        self.api_key = os.environ['TOGGL_API_KEY']
         if self.api_key is None:
             raise Exception("Unable to execute api tests without an api key")
 
@@ -31,34 +29,33 @@ class TogglPyTests(unittest.TestCase):
         if self.workspace_id is None:
             raise Exception("Unable to execute api tests without a workspace key to query")
 
-        self.toggl        = Toggl()
+        self.toggl = Toggl()
         self.toggl.setAPIKey(self.api_key)
 
     def test_connect(self):
         response = self.toggl.request("https://api.track.toggl.com/api/v8/clients")
-        self.assertTrue(response is not None)
+        self.assertIsNotNone(response)
 
     def test_putTimeEntry(self):
         request_args = {
             'workspace_id': self.workspace_id,
         }
         entries = self.toggl.getDetailedReport(request_args)
-        #for this tests I'm tagging my Pomodoro Entries
-        missing_projects = [r for r in entries['data'] if r['project'] is None and 'Pomodoro' in r['description'] ]
+        # for this tests I'm tagging my Pomodoro Entries
+        missing_projects = [r for r in entries['data'] if r['project'] is None and 'Pomodoro' in r['description']]
         me = missing_projects[0]
-        me_id = me['id'] #remember for later
+        me_id = me['id']  # remember for later
 
-        #I've tagged my pomodoro entries as Self/Self
+        # I've tagged my pomodoro entries as Self/Self
         cp = self.toggl.getClientProject("Self", "Self")
         project_id = cp['data']['id']
         me['pid'] = project_id
 
-        #his is the new stuff
-        response = self.toggl.putTimeEntry({"id": me_id, "pid":project_id})
-        self.assertTrue(response is not None)
-        self.assertTrue('data' in response)
-        self.assertTrue(response['data']['pid'] == project_id)
-
+        # his is the new stuff
+        response = self.toggl.putTimeEntry({"id": me_id, "pid": project_id})
+        self.assertIsNotNone(response)
+        self.assertIn('data', response)
+        self.assertEqual(response['data']['pid'], project_id)
 
     def test_getDetailedReportCSV(self):
         data = {
@@ -70,28 +67,28 @@ class TogglPyTests(unittest.TestCase):
         os.remove(csvfile)
 
         data = self.toggl.getDetailedReportCSV(data)
-        self.assertTrue(data is not None)
-
+        self.assertIsNotNone(data)
 
     def test_getDetailedReport(self):
         data = {
             'workspace_id': self.workspace_id,
         }
         d = self.toggl.getDetailedReport(data)
-        self.assertTrue(d is not None)
-        self.assertTrue(len(d.keys()) > 0 )
+        self.assertIsNotNone(d)
+        self.assertGreater(len(d.keys()), 0)
         fields = ['total_count', 'total_currencies', 'total_billable', 'data']
         for f in fields:
-            self.assertTrue(f in d.keys())
+            self.assertIn(f, d.keys())
         data = d['data']
-        self.assertTrue(len(data)>0)
+        self.assertGreater(len(data), 0)
         dr = data[0]
-        self.assertTrue('client' in dr)
-        self.assertTrue('start' in dr)
-        self.assertTrue('end' in dr)
-        self.assertTrue('task' in dr)
-        self.assertTrue('user' in dr)
-        self.assertTrue('project' in dr)
+        self.assertIn('client', dr)
+        self.assertIn('start', dr)
+        self.assertIn('end', dr)
+        self.assertIn('task', dr)
+        self.assertIn('user', dr)
+        self.assertIn('project', dr)
+
 
 if __name__ == '__main__':
     unittest.main()
