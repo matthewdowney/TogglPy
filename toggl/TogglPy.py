@@ -14,10 +14,11 @@ from datetime import datetime
 cafile = None
 if sys.version[0] == "2":
     from urllib import urlencode
-    from urllib2 import urlopen, Request
+
+    from urllib2 import Request, urlopen
 else:
     from urllib.parse import urlencode
-    from urllib.request import urlopen, Request
+    from urllib.request import Request, urlopen
     try:
         import certifi
         cafile = certifi.where()

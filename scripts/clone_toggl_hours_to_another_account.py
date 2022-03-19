@@ -3,9 +3,12 @@
 #  TOGGL_APIKEY=b58ded522fbe3c7545b3694565fdf122 python3 scripts/clone_toggl_hours_to_another_account.py 2021-05-01 2021-05-31 920770 9680195 163968195 1204988 442482
 # See sys.argv refs for arg documentation
 
+import datetime
+import os
+import sys
 import urllib
+
 from toggl.TogglPy import Toggl
-import datetime, sys, os
 
 user_agent = 'cloner'
 
