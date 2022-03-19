@@ -52,7 +52,7 @@ response = toggl.request("https://api.track.toggl.com/api/v8/clients")
 # list of returned values can be found in the Toggl docs:
 # https://github.com/toggl/toggl_api_docs/blob/master/chapters/clients.md
 for client in response:
-    print "Client name: %s  Client id: %s" % (client['name'], client['id'])
+    print("Client name: %s  Client id: %s" % (client['name'], client['id']))
 ```
 Or, if you want to add some data to your request:
 ```python
@@ -102,23 +102,23 @@ toggl.getSummaryReportPDF(data, "summary-report.pdf")
 ### Finding workspaces and clients
 This will print some raw data that will give you all the info you need to identify clients and workspaces quickly:
 ```python
-print toggl.getWorkspaces()
-print toggl.getClients()
+print(toggl.getWorkspaces())
+print(toggl.getClients())
 ```
 If you want to clean it up a little replace those print statements with
 ```python
 for workspace in toggl.getWorkspaces():
-    print "Workspace name: %s\tWorkspace id:%s" % (workspace['name'], workspace['id'])
+    print("Workspace name: %s\tWorkspace id:%s" % (workspace['name'], workspace['id']))
 for client in toggl.getClients():
-    print "Client name: %s\tClient id:%s" % (client['name'], client['id'])
+    print("Client name: %s\tClient id:%s" % (client['name'], client['id']))
 ```
 If you want to find a specific client or workspace:
 ```python
 john_doe = toggl.getClient(name="John Doe")
 personal = toggl.getWorkspace(name="Personal")
 
-print "John's client id is %s" % john_doe['id']
-print "The workspace id for 'Personal' is %s" % personal['id']
+print("John's client id is %s" % john_doe['id'])
+print("The workspace id for 'Personal' is %s" % personal['id'])
 ```
 The reverse can also be done; use `.getClient(id=0000)` or `.getWorkspace(id=000)` to find items by id.
 
