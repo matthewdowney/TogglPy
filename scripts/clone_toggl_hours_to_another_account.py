@@ -13,7 +13,7 @@ def get_entries(start, end, from_workspace_id, from_user_id):
     toggl = Toggl()
 
     toggl.setAPIKey(os.getenv('TOGGL_APIKEY'))
-    response = toggl.request(f'https://toggl.com/reports/api/v2/details?workspace_id={from_workspace_id}&since={start}&until={end}&user_agent={user_agent}&uid={from_user_id}&include_time_entry_ids=true&user_ids={from_user_id}')
+    response = toggl.request(f'https://api.track.toggl.com/reports/api/v2/details?workspace_id={from_workspace_id}&since={start}&until={end}&user_agent={user_agent}&uid={from_user_id}&include_time_entry_ids=true&user_ids={from_user_id}')
     if response['total_count'] > response['per_page']:
         raise Exception('Paging not supported, results exceed the page')
     for k, v in response.items():
