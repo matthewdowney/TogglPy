@@ -20,8 +20,9 @@ def get_entries(start, end, from_workspace_id, from_user_id):
     toggl = Toggl()
 
     toggl.setAPIKey(os.getenv('TOGGL_APIKEY'))
+
     response = toggl.request(
-        f'https://toggl.com/reports/api/v2/details?workspace_id={from_workspace_id}'
+        f'https://api.track.toggl.com/reports/api/v2/details?workspace_id={from_workspace_id}'
         f'&since={start}&until={end}&user_agent={user_agent}&uid={from_user_id}'
         f'&include_time_entry_ids=true&user_ids={from_user_id}'
     )
