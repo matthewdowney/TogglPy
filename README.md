@@ -1,5 +1,7 @@
 # TogglPy
 
+> **Archived**: I'm sunsetting this library. See #61. 
+
 [![Latest PyPI version](https://img.shields.io/pypi/v/TogglPy.svg)](https://pypi.org/project/TogglPy/)
 
 TogglPy is a python library for interacting with the [Toggl API](https://github.com/toggl/toggl_api_docs).
